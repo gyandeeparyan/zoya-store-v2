@@ -2,7 +2,7 @@
 
 import {
   Sheet,
-  SheetClose,
+
   SheetContent,
   SheetDescription,
   SheetFooter,
