@@ -62,7 +62,7 @@ export const Lens: React.FC<LensProps> = ({
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
-            className="absolute inset-0 overflow-hidden"
+            className="absolute inset-0 overflow-hidden hidden md:block"
             style={{
               maskImage: `radial-gradient(circle ${lensSize / 2}px at ${
                 position.x
@@ -93,7 +93,7 @@ export const Lens: React.FC<LensProps> = ({
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
-                className="absolute inset-0 overflow-hidden"
+                className="absolute inset-0 overflow-hidden hidden md:block"
                 style={{
                   maskImage: `radial-gradient(circle ${lensSize / 2}px at ${
                     mousePosition.x

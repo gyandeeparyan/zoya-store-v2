@@ -12,11 +12,11 @@ export function LensDemo() {
 
   return (
     <div>
-      <div className="w-full  relative rounded-3xl overflow-hidden max-w-xs mx-auto bg-gradient-to-r from-[#1D2235] to-[#121318] p-6 my-8">
-        <Rays />
-        <Beams />
+      <div className="w-full  relative rounded-3xl overflow-hidden max-w-xs mx-auto  md:bg-gradient-to-r from-[#1D2235] to-[#121318] p-6 my-8">
+        <div className="hidden md:block"><Rays /><Beams /></div>
+        
         <div className="relative z-10">
-          <Lens hovering={hovering} setHovering={setHovering}>
+          <div className="hidden md:block">  <Lens hovering={hovering} setHovering={setHovering} >
             <Image
               src="https://res.cloudinary.com/dzbmc0pit/image/upload/v1737906134/zoya-store/6b681f0597984125e8b6e56072fa0a0a_1_otbgic.jpg"
               alt="image"
@@ -24,7 +24,17 @@ export function LensDemo() {
               height={500}
               className="rounded-2xl"
             />
-          </Lens>
+          </Lens></div>
+          <div className="md:hidden">
+          <Image
+              src="https://res.cloudinary.com/dzbmc0pit/image/upload/v1737906134/zoya-store/6b681f0597984125e8b6e56072fa0a0a_1_otbgic.jpg"
+              alt="image"
+              width={500}
+              height={500}
+              className="rounded-2xl"
+            />
+          </div>
+        
           <motion.div
             animate={{
               filter: hovering ? "blur(2px)" : "blur(0px)",
