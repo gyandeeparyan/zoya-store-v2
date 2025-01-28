@@ -6,6 +6,7 @@ import { ShootingStarsAndStarsBackgroundDemo } from "@/components/ui/ShootingSta
 import { CartProvider } from '@/context/cartContext';
 import { UserProvider } from '@/context/userContext';
 import { CouponPurchaseProvider } from '@/context/couponPurchaseContext';
+import { Toaster } from "@/components/ui/toaster";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,6 +39,7 @@ export default function RootLayout({
               <NavigationMenuDemo />
               <ShootingStarsAndStarsBackgroundDemo  />
               <div className="relative z-10">{children}</div>
+              <Toaster />
             </CouponPurchaseProvider>
           </CartProvider>
         </UserProvider>

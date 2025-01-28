@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { useUser } from '@/context/userContext';
+import { useToast } from "@/hooks/use-toast";
 
 import {
   Sheet,
@@ -37,6 +38,7 @@ export function ProceedToPaySheet() {
   const [username, setUsername] = useState("");
 
   const { setUserDetails } = useUser();
+  const { toast } = useToast();
   const { register, handleSubmit, getValues } = useForm<FormValues>();
 
   const validateUser = async (data: FormValues) => {
@@ -51,11 +53,24 @@ export function ProceedToPaySheet() {
       if (result.success && result.name) {
         setIsValidated(true);
         setUsername(result.name);
+        toast({
+          title: "Success",
+          description: "User validated successfully!",
+          variant: "default",
+        });
       } else {
-        alert("Invalid User ID or Server ID. Please check and try again.");
+        toast({
+          title: "Validation Failed",
+          description: "Invalid User ID or Server ID. Please check and try again.",
+          variant: "destructive",
+        });
       }
     } catch (error) {
-      alert("Failed to validate user. Please try again.");
+      toast({
+        title: "Error",
+        description: "Failed to validate user. Please try again.",
+        variant: "destructive",
+      });
       console.error("Validation error:", error);
     } finally {
       setIsValidating(false);
@@ -89,7 +104,7 @@ export function ProceedToPaySheet() {
             Review your details and proceed to payment.
           </SheetDescription>
         </SheetHeader>
-        <div className='flex flex-col items-center justify-center flex-grow h-[calc(100vh-200px)] md:h-auto md:py-12 gap-6 p-4'>
+        <div className='flex flex-col overflow-y-scroll items-center justify-center flex-grow h-[calc(100vh-200px)] md:h-auto md:py-12 gap-6 p-4'>
           <fieldset className="border border-white/20 rounded-lg p-4 w-[100%]">
             <legend className="px-2 text-sm text-white/60">User ID</legend>
             <Input
