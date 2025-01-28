@@ -5,30 +5,58 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button"
-import {  IndianRupee, PlusCircle} from "lucide-react";
+import { IndianRupee, PlusCircle} from "lucide-react";
+import { useCart } from '@/context/cartContext';
 
-export function LensDemo() {
+interface LensDemoProps {
+  id: number;
+  name: string;
+  imgUrl: string;
+  originalQuantity: number;
+  newQuantity: number;
+  price: string;
+}
+
+export function LensDemo({ id, name, imgUrl, originalQuantity, newQuantity, price }: LensDemoProps) {
   const [hovering, setHovering] = useState(false);
+  const { addItem } = useCart();
+
+  const handleAddToCart = () => {
+    addItem({
+      id,
+      name,
+      price,
+      imgUrl,
+      originalQuantity,
+      newQuantity,
+      quantity: 1
+    });
+  };
 
   return (
     <div>
-      <div className="w-full  relative rounded-3xl overflow-hidden max-w-xs mx-auto  md:bg-gradient-to-r from-[#1D2235] to-[#121318] p-6 my-8">
-        <div className="hidden md:block"><Rays /><Beams /></div>
+      <div className="w-full relative rounded-3xl overflow-hidden max-w-xs mx-auto md:bg-gradient-to-r from-[#1D2235] to-[#121318] p-6 my-8">
+        <div className="hidden md:block">
+          <Rays />
+          <Beams />
+        </div>
         
         <div className="relative z-10">
-          <div className="hidden md:block">  <Lens hovering={hovering} setHovering={setHovering} >
-            <Image
-              src="https://res.cloudinary.com/dzbmc0pit/image/upload/v1737906134/zoya-store/6b681f0597984125e8b6e56072fa0a0a_1_otbgic.jpg"
-              alt="image"
-              width={500}
-              height={500}
-              className="rounded-2xl"
-            />
-          </Lens></div>
+          <div className="hidden md:block">  
+            <Lens hovering={hovering} setHovering={setHovering}>
+              <Image
+                src={imgUrl}
+                alt={name}
+                width={500}
+                height={500}
+                className="rounded-2xl"
+              />
+            </Lens>
+          </div>
           <div className="md:hidden">
-          <Image
-              src="https://res.cloudinary.com/dzbmc0pit/image/upload/v1737906134/zoya-store/6b681f0597984125e8b6e56072fa0a0a_1_otbgic.jpg"
-              alt="image"
+            <Image
+              src={imgUrl}
+              alt={name}
               width={500}
               height={500}
               className="rounded-2xl"
@@ -41,29 +69,35 @@ export function LensDemo() {
             }}
             className="py-4 relative z-20"
           >
-            <article className="text-white text-md flex justify-between text-left ">
-              
+            <article className="text-white text-md flex justify-between text-left">
               <p className="flex font-semibold items-center gap-1">
                 <span>
-                    <IndianRupee strokeWidth={3.25} className="w-4 h-4"/>
+                  <IndianRupee strokeWidth={3.25} className="w-4 h-4"/>
                 </span>
-            50
+                {price}
               </p>
-              <span className="">{`3 DIAMONDS `}</span>
+              <div className="flex items-center gap-2">
+                <span className="text-gray-500 line-through text-sm">
+                  {originalQuantity}
+                </span>
+                <span className="text-white font-semibold">
+                  {newQuantity} DIAMONDS
+                </span>
+              </div>
             </article>
-          
-
           </motion.div>
-          <Button className="w-full bg-violet-200 text-black rounded-full font-bold flex gap-2 hover:scale-105 "><span><PlusCircle strokeWidth={3.25}/></span>ADD</Button>
+          <Button 
+            onClick={handleAddToCart}
+            className="w-full bg-violet-200 text-black rounded-full font-bold flex gap-2 hover:scale-105"
+          >
+            <span><PlusCircle strokeWidth={3.25}/></span>
+            ADD
+          </Button>
         </div>
-        
       </div>
-      
     </div>
   );
 }
-
-
 
 const Beams = () => {
   return (

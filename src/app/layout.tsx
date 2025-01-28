@@ -3,6 +3,9 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { NavigationMenuDemo } from "@/components/Navbar";
 import { ShootingStarsAndStarsBackgroundDemo } from "@/components/ui/ShootingStarsAndStarsBackgroundDemo";
+import { CartProvider } from '@/context/cartContext';
+import { UserProvider } from '@/context/userContext';
+import { CouponPurchaseProvider } from '@/context/couponPurchaseContext';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,10 +32,17 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased relative`}
       >
-        <NavigationMenuDemo />
-        <ShootingStarsAndStarsBackgroundDemo  />
-        <div className="relative z-10">{children}</div>
+        <UserProvider>
+          <CartProvider>
+            <CouponPurchaseProvider>
+              <NavigationMenuDemo />
+              <ShootingStarsAndStarsBackgroundDemo  />
+              <div className="relative z-10">{children}</div>
+            </CouponPurchaseProvider>
+          </CartProvider>
+        </UserProvider>
       </body>
     </html>
   );
 }
+

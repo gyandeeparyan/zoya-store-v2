@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
+import { useUser } from '@/context/userContext';
 
 import {
   Sheet,
@@ -17,34 +18,67 @@ import {
 interface FormValues {
   userId: string;
   serverId: string;
+  customerName: string;
+  whatsapp: string;
+  email: string;
 }
 
+interface ValidationResponse {
+  success: boolean;
+  game: string;
+  id: number;
+  server: number;
+  name: string;
+}
 
 export function ProceedToPaySheet() {
   const [isValidating, setIsValidating] = useState(false);
   const [isValidated, setIsValidated] = useState(false);
   const [username, setUsername] = useState("");
 
-  const { register, handleSubmit } = useForm<FormValues>();
+  const { setUserDetails } = useUser();
+  const { register, handleSubmit, getValues } = useForm<FormValues>();
 
-  const mockValidateUser = async (data: FormValues) => {
+  const validateUser = async (data: FormValues) => {
     setIsValidating(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    
-    // Mock validation - you can replace this with your actual validation logic
-    if (data.userId === "123" && data.serverId === "456") {
-      setIsValidated(true);
-      setUsername("John Doe");
+    try {
+      const response = await fetch(
+        `https://api.isan.eu.org/nickname/ml?id=${data.userId}&zone=${data.serverId}`
+      );
+      
+      const result: ValidationResponse = await response.json();
+      
+      if (result.success && result.name) {
+        setIsValidated(true);
+        setUsername(result.name);
+      } else {
+        alert("Invalid User ID or Server ID. Please check and try again.");
+      }
+    } catch (error) {
+      alert("Failed to validate user. Please try again.");
+      console.error("Validation error:", error);
+    } finally {
+      setIsValidating(false);
     }
-    setIsValidating(false);
   };
 
- 
+  const handleProceedToPay = () => {
+    const formValues = getValues();
+    setUserDetails({
+      userId: formValues.userId,
+      serverId: formValues.serverId,
+      username: username,
+      customerName: formValues.customerName,
+      whatsapp: formValues.whatsapp,
+      email: formValues.email
+    });
+    // Proceed with payment logic here
+  };
+
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button className="w-[100%] h-12 text-lg">
+        <Button className="w-[91%] h-12 text-lg">
           Order Now
         </Button>
       </SheetTrigger>
@@ -75,7 +109,7 @@ export function ProceedToPaySheet() {
           </fieldset>
 
           <Button 
-            onClick={handleSubmit(mockValidateUser)}
+            onClick={handleSubmit(validateUser)}
             disabled={isValidating || isValidated}
             className="w-[100%] h-12 text-lg"
           >
@@ -92,16 +126,47 @@ export function ProceedToPaySheet() {
           </Button>
           
           {isValidated && username && (
-            <p className="text-green-400 text-center w-full">
-              Welcome, {username}!
-            </p>
-          )}
-          
-          
-          {isValidated && username && (
-           <Button className="w-[100%] h-12 text-lg">
-           Proceed to Pay
-         </Button>
+            <>
+              <p className="text-green-400 text-center w-full">
+                Welcome, {username}!
+              </p>
+
+              <fieldset className="border border-white/20 rounded-lg p-4 w-[100%]">
+                <legend className="px-2 text-sm text-white/60">Full Name</legend>
+                <Input
+                  placeholder="Enter your full name"
+                  {...register("customerName", { required: true })}
+                  className="bg-white/10 border-none text-white h-12 text-lg w-full"
+                />
+              </fieldset>
+
+              <fieldset className="border border-white/20 rounded-lg p-4 w-[100%]">
+                <legend className="px-2 text-sm text-white/60">WhatsApp Number</legend>
+                <Input
+                  placeholder="Enter WhatsApp number"
+                  type="tel"
+                  {...register("whatsapp", { required: true })}
+                  className="bg-white/10 border-none text-white h-12 text-lg w-full"
+                />
+              </fieldset>
+
+              <fieldset className="border border-white/20 rounded-lg p-4 w-[100%]">
+                <legend className="px-2 text-sm text-white/60">Email Address</legend>
+                <Input
+                  placeholder="Enter email address"
+                  type="email"
+                  {...register("email", { required: true })}
+                  className="bg-white/10 border-none text-white h-12 text-lg w-full"
+                />
+              </fieldset>
+
+              <Button 
+                onClick={handleSubmit(handleProceedToPay)} 
+                className="w-[100%] h-12 text-lg"
+              >
+                Proceed to Pay
+              </Button>
+            </>
           )}
           
         </div>
