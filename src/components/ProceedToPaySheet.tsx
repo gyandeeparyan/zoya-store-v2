@@ -1,12 +1,16 @@
-import { Button } from "@/components/ui/button";
+import { VibratingButton as Button } from "@/components/ui/vibrating-button";
 import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { useUser } from '@/context/userContext';
 import { useToast } from "@/hooks/use-toast";
+import { useCart } from '@/context/cartContext';
+import { useCouponPurchase } from '@/context/couponPurchaseContext';
+import { loadRazorpay } from '@/lib/razorpay';
 
 import {
+  SheetClose,
   Sheet,
   SheetContent,
   SheetDescription,
@@ -32,6 +36,19 @@ interface ValidationResponse {
   name: string;
 }
 
+interface OrderResponse {
+  orderId: string;
+  amount: number;
+  currency: string;
+  keyId: string;
+  error?: string;
+}
+
+interface VerifyResponse {
+  success: boolean;
+  error?: string;
+}
+
 export function ProceedToPaySheet() {
   const [isValidating, setIsValidating] = useState(false);
   const [isValidated, setIsValidated] = useState(false);
@@ -40,6 +57,8 @@ export function ProceedToPaySheet() {
   const { setUserDetails } = useUser();
   const { toast } = useToast();
   const { register, handleSubmit, getValues } = useForm<FormValues>();
+  const { clearCart } = useCart();
+  const { purchaseDetails, clearPurchaseDetails } = useCouponPurchase();
 
   const validateUser = async (data: FormValues) => {
     setIsValidating(true);
@@ -77,6 +96,75 @@ export function ProceedToPaySheet() {
     }
   };
 
+  const handlePayment = async () => {
+    try {
+      const response = await fetch('/api/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ purchaseDetails })
+      });
+
+      const data: OrderResponse = await response.json();
+      if (data.error) throw new Error(data.error);
+
+      const razorpay = await loadRazorpay();
+      
+      const options: RazorpayOptions = {
+        key: data.keyId,
+        amount: data.amount,
+        currency: data.currency,
+        order_id: data.orderId,
+        name: 'Zoya Store',
+        description: 'Diamond Purchase',
+        handler: async function(response: RazorpayResponse) {
+          try {
+            const verifyResponse = await fetch('/api/verify-payment', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature
+              })
+            });
+
+            const verifyData: VerifyResponse = await verifyResponse.json();
+            
+            if (verifyData.success) {
+              toast({
+                title: "Payment Successful",
+                description: "Your order has been placed successfully!",
+                variant: "default",
+              });
+              clearCart();
+              clearPurchaseDetails();
+            }
+          } catch (error) {
+            toast({
+              title: "Payment Failed",
+              description: "There was an error processing your payment.",
+              variant: "destructive",
+            });
+          }
+        },
+        prefill: purchaseDetails?.customerInfo ? {
+          name: purchaseDetails.customerInfo.customerName,
+          email: purchaseDetails.customerInfo.email,
+          contact: purchaseDetails.customerInfo.whatsapp
+        } : undefined
+      };
+
+      const paymentObject = new razorpay(options);
+      paymentObject.open();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to initialize payment.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleProceedToPay = () => {
     const formValues = getValues();
     setUserDetails({
@@ -87,17 +175,21 @@ export function ProceedToPaySheet() {
       whatsapp: formValues.whatsapp,
       email: formValues.email
     });
-    // Proceed with payment logic here
+    handlePayment();
   };
 
   return (
     <Sheet>
+      
       <SheetTrigger asChild>
+     
         <Button className="w-[91%] h-12 text-lg">
           Order Now
         </Button>
+       
       </SheetTrigger>
       <SheetContent className='overflow-y-auto z-50 max-w-md mx-auto'>
+        
         <SheetHeader className="mb-4 md:mb-8">
           <SheetTitle>Enter your details</SheetTitle>
           <SheetDescription>
@@ -126,7 +218,7 @@ export function ProceedToPaySheet() {
           <Button 
             onClick={handleSubmit(validateUser)}
             disabled={isValidating || isValidated}
-            className="w-[100%] h-12 text-lg"
+            className="w-full h-12 text-lg"
           >
             {isValidating ? (
               <>
@@ -174,13 +266,15 @@ export function ProceedToPaySheet() {
                   className="bg-white/10 border-none text-white h-12 text-lg w-full"
                 />
               </fieldset>
-
+             <SheetClose asChild>
               <Button 
+               
                 onClick={handleSubmit(handleProceedToPay)} 
-                className="w-[100%] h-12 text-lg"
+                className="w-full h-12 text-lg"
               >
                 Proceed to Pay
               </Button>
+              </SheetClose>
             </>
           )}
           

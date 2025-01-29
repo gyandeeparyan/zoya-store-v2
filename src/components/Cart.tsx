@@ -1,7 +1,8 @@
-import { Button } from "@/components/ui/button";
-import { Sparkles, CircleX, ShoppingCart, ShoppingBasket } from "lucide-react";
+import { VibratingButton as Button } from "@/components/ui/vibrating-button";
+import { Sparkles, CircleX, ShoppingCart ,IndianRupee} from "lucide-react";
 import {
   Sheet,
+  SheetClose,
   SheetContent,
   SheetHeader,
   SheetTitle,
@@ -27,8 +28,16 @@ export function Cart() {
         <SheetHeader className="mb-4 md:mb-8">
           <div className="flex flex-col gap-2 justify-between items-center">
             <SheetTitle className="text-white">Your Cart</SheetTitle>
-            {items.length > 0 && <ProceedToPaySheet />}
-           
+            {items.length > 0 && (
+              <>
+                <SheetClose asChild>
+                  <Button type="button" className="w-[91%] h-12 text-lg">
+                    Close
+                  </Button>
+                </SheetClose>
+                <ProceedToPaySheet />
+              </>
+            )}
           </div>
         </SheetHeader>
         
@@ -38,8 +47,8 @@ export function Cart() {
             <div className="rounded-lg p-4 border border-white/20">
                     <div className="flex justify-between items-center">
                       <span className="text-gray-400">Total Amount</span>
-                      <span className="text-xl font-bold text-white">
-                        ${getCartTotal().toFixed(2)}
+                      <span className="text-xl font-bold flex gap-1 items-center text-white">
+                      <IndianRupee className="h-4 w-4"/> {getCartTotal().toFixed(2)}
                       </span>
                     </div>
                   </div>
@@ -61,17 +70,17 @@ export function Cart() {
                       <div className="flex items-center gap-2">
                         <span className="text-sm text-gray-400">Cart Qty: {item.quantity}</span>
                         <span className="text-sm text-violet-400">×</span>
-                        <span className="text-sm text-gray-400">${item.price}</span>
+                        <span className="text-sm flex gap-1 items-center text-gray-400"> <IndianRupee className="h-4 w-4"/>{item.price}</span>
                       </div>
-                      <span className="text-lg font-semibold text-white">
-                        ${(parseFloat(item.price) * item.quantity).toFixed(2)}
+                      <span className="text-lg flex gap-1 font-semibold items-center text-white">
+                        <IndianRupee className="h-4 w-4"/>{(parseFloat(item.price) * item.quantity).toFixed(2)}
                       </span>
                     </div>
                     
                     <Button 
                       variant="ghost" 
                       onClick={() => removeItem(item.id)}
-                      className="mt-2 h-8 text-red-400 hover:text-red-300 hover:bg-red-400/10 p-0 flex items-center gap-2"
+                      className="mt-2 h-8 w-full text-red-400 hover:text-red-300 hover:bg-red-400/10 p-0 flex items-center gap-2"
                     >
                       <CircleX className="w-4 h-4" />
                       REMOVE
@@ -88,7 +97,7 @@ export function Cart() {
                   <Button
                     variant="ghost"
                     onClick={clearCart}
-                    className="text-red-400 hover:text-red-300"
+                    className="w-full text-red-400 hover:text-red-300"
                   >
                     <CircleX className="w-4 h-4 mr-2" />
                     Clear Cart

@@ -4,9 +4,9 @@ import { Lens } from "@/components/ui/lens";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button"
 import { IndianRupee, PlusCircle} from "lucide-react";
 import { useCart } from '@/context/cartContext';
+import { VibratingButton as Button } from "@/components/ui/vibrating-button";
 
 interface LensDemoProps {
   id: number;
@@ -21,7 +21,12 @@ export function LensDemo({ id, name, imgUrl, originalQuantity, newQuantity, pric
   const [hovering, setHovering] = useState(false);
   const { addItem } = useCart();
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
+    // If device supports vibration, trigger it
+    if (typeof window !== "undefined" && window.navigator.vibrate) {
+      window.navigator.vibrate(50); // 50ms vibration
+    }
+    
     addItem({
       id,
       name,
@@ -86,13 +91,18 @@ export function LensDemo({ id, name, imgUrl, originalQuantity, newQuantity, pric
               </div>
             </article>
           </motion.div>
-          <Button 
-            onClick={handleAddToCart}
-            className="w-full bg-violet-200 text-black rounded-full font-bold flex gap-2 hover:scale-105"
+          <motion.div
+            whileTap={{ scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 400, damping: 17 }}
           >
-            <span><PlusCircle strokeWidth={3.25}/></span>
-            ADD
-          </Button>
+            <Button 
+              onClick={handleAddToCart}
+              className="w-full bg-violet-200 text-black rounded-full font-bold flex gap-2 hover:scale-105"
+            >
+              <span><PlusCircle strokeWidth={3.25}/></span>
+              ADD
+            </Button>
+          </motion.div>
         </div>
       </div>
     </div>
