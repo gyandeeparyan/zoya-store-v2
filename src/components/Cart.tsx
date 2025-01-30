@@ -8,11 +8,13 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { ProceedToPaySheet } from "./ProceedToPaySheet";
 import { useCart } from '@/context/cartContext';
+import { useRouter } from 'next/navigation';
+import Link from "next/link";
 
 export function Cart() {
   const { items, removeItem, clearCart, getCartTotal } = useCart();
+  const router = useRouter();
 
   return (
     <Sheet>
@@ -26,17 +28,19 @@ export function Cart() {
       </SheetTrigger>
       <SheetContent className="overflow-y-auto z-50 max-w-md mx-auto">
         <SheetHeader className="mb-4 md:mb-8">
-          <div className="flex flex-col gap-2 justify-between items-center">
+          <div className="flex flex-col gap-2 justify-between items-center w-full">
             <SheetTitle className="text-white">Your Cart</SheetTitle>
             {items.length > 0 && (
-              <>
-                <SheetClose asChild>
-                  <Button type="button" className="w-[91%] h-12 text-lg">
-                    Close
+              <Link href="/payment" className="w-full">
+                <SheetClose className="w-full">
+                  <Button
+                    type="submit" 
+                    className="w-[90%] h-12 text-lg"
+                  >
+                    Order Now
                   </Button>
                 </SheetClose>
-                <ProceedToPaySheet />
-              </>
+              </Link>
             )}
           </div>
         </SheetHeader>

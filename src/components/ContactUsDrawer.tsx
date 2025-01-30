@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Instagram, MessageCircleMore } from "lucide-react"
+import { Instagram, MessageCircleMore, ChevronDown } from "lucide-react"
 import Link from "next/link"
 
 import { Button } from "@/components/ui/button"
@@ -9,18 +9,12 @@ import {
   Drawer,
   DrawerClose,
   DrawerContent,
-
-  DrawerFooter,
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer"
 
 export function ContactUsDrawer() {
- 
-
-  
-
   return (
     <Drawer>
       <DrawerTrigger asChild>
@@ -28,10 +22,18 @@ export function ContactUsDrawer() {
       </DrawerTrigger>
       <DrawerContent className="">
         <div className="mx-auto w-full text-white z-50 max-w-sm">
-          <DrawerHeader>
-            <DrawerTitle className="text-center">Contact us</DrawerTitle>
-          </DrawerHeader>
-          <div className="p-4 pb-0">
+          <div className="flex justify-center items-center">
+            <DrawerHeader>
+              <DrawerTitle className="text-left hidden">Contact us</DrawerTitle>
+            </DrawerHeader>
+            <DrawerClose className="max-h-full max-w-full">
+              <Button className="text-black bg-red-400 hover:bg-red-300 rounded-full mr-4 h-10 w-10 p-0">
+                <ChevronDown className="h-10 w-10" />
+              </Button>
+            </DrawerClose>
+          </div>
+          
+          <div className="p-4 pb-4">
             <div className="flex flex-row items-center justify-center gap-4">
               <Link 
                 href="https://www.instagram.com/zoyaofficial898" 
@@ -51,11 +53,6 @@ export function ContactUsDrawer() {
               </Link>
             </div>
           </div>
-          <DrawerFooter>
-            <DrawerClose asChild>
-              <Button className="bg-violet-100 text-black">Close</Button>
-            </DrawerClose>
-          </DrawerFooter>
         </div>
       </DrawerContent>
     </Drawer>

@@ -4,7 +4,7 @@ import * as React from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useToast } from "@/hooks/use-toast"
-import { Loader2 } from "lucide-react"
+import { Loader2 ,  ChevronDown} from "lucide-react"
 import {
   Drawer,
   DrawerClose,
@@ -83,35 +83,44 @@ export function MyOrdersDrawer() {
       <DrawerTrigger asChild>
         <button className="">Orders</button>
       </DrawerTrigger>
-      <DrawerContent className="h-full">
+      <DrawerContent className="h-full  ">
         <div className="mx-auto w-full text-white z-50 max-w-xl">
+          <div className="flex justify-between items-center ">
           <DrawerHeader>
-            <DrawerTitle>Order History</DrawerTitle>
-            <DrawerDescription>
+            <DrawerTitle className="text-left">Order History</DrawerTitle>
+            <DrawerDescription className="text-left">
               Enter your WhatsApp number to view your orders.
             </DrawerDescription>
           </DrawerHeader>
-          
-          <div className="p-4 space-y-4">
-            <div className="flex gap-2">
-              <Input
-                type="tel"
-                placeholder="Enter WhatsApp number"
-                value={whatsapp}
-                onChange={(e) => setWhatsapp(e.target.value)}
-                className="bg-white/10 border-white/20 text-white"
-              />
-              <Button 
-                onClick={handleSearch}
-                disabled={isLoading}
-                className="min-w-[100px]"
-              >
-                {isLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  "Search"
-                )}
-              </Button>
+          <DrawerClose className="max-h-full max-w-full">
+            <Button className="text-black bg-red-400 hover:bg-red-300 rounded-full mr-4 h-10 w-10 p-0">< ChevronDown className="h-10 w-10" /></Button>
+          </DrawerClose>
+          </div>
+          <div className="p-4 space-y-6">
+            <div className="flex flex-col gap-4">
+              <fieldset className="border border-white/20 rounded-lg p-4">
+                <legend className="px-2 text-sm text-white/60">WhatsApp Number</legend>
+                <div className="flex gap-2">
+                  <Input
+                    type="tel"
+                    placeholder="Enter WhatsApp number"
+                    value={whatsapp}
+                    onChange={(e) => setWhatsapp(e.target.value)}
+                    className="bg-white/10 border-none text-white h-12 text-lg flex-1"
+                  />
+                  <Button 
+                    onClick={handleSearch}
+                    disabled={isLoading}
+                    className="h-12 px-6"
+                  >
+                    {isLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      "Search"
+                    )}
+                  </Button>
+                </div>
+              </fieldset>
             </div>
 
             {isLoading ? (
@@ -129,11 +138,7 @@ export function MyOrdersDrawer() {
             )}
           </div>
 
-          <DrawerFooter>
-            <DrawerClose asChild>
-              <Button className="bg-violet-100 text-black">Close</Button>
-            </DrawerClose>
-          </DrawerFooter>
+        
         </div>
       </DrawerContent>
     </Drawer>
