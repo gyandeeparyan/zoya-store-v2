@@ -3,7 +3,7 @@
 import * as React from "react"
 import * as SheetPrimitive from "@radix-ui/react-dialog"
 import { cva, type VariantProps } from "class-variance-authority"
-import { X } from "lucide-react"
+import { ChevronDown, X } from "lucide-react"
 
 
 import { cn } from "@/lib/utils"
@@ -66,14 +66,15 @@ const SheetContent = React.forwardRef<
       {...props}
     >
       {children}
-      <SheetPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary">
+      <SheetPrimitive.Close className="absolute  top-4 text-center rounded-full bg-white text-black p-2 h-10 w-10 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary">
         <button 
           onClick={() => {
             const closeButtons = document.querySelectorAll('[data-sheet-close]');
             closeButtons.forEach(button => (button as HTMLButtonElement).click());
           }}
         >
-          <X className="h-4 w-4" />
+          <X className="h-4 w-4 absolute top-3 right-3 hidden md:block" />
+          <ChevronDown className="absolute top-3 right-3 h-4 w-4 md:hidden" />
           <span className="sr-only">Close</span>
         </button>
       </SheetPrimitive.Close>

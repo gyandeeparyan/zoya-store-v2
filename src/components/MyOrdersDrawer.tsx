@@ -93,7 +93,7 @@ export function MyOrdersDrawer() {
             </DrawerDescription>
           </DrawerHeader>
           <DrawerClose className="max-h-full max-w-full">
-            <Button className="text-black bg-red-400 hover:bg-red-300 rounded-full mr-4 h-10 w-10 p-0">< ChevronDown className="h-10 w-10" /></Button>
+            <Button className="text-black bg-white hover:bg-gray-300 rounded-full mr-4 h-10 w-10 p-0">< ChevronDown className="h-10 w-10" /></Button>
           </DrawerClose>
           </div>
           <div className="p-4 space-y-6">
