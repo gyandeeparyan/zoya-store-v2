@@ -125,7 +125,7 @@ export function MyOrdersDrawer() {
 
             {isLoading ? (
               <div className="space-y-3">
-                {[...Array(3)].map((_, i) => (
+                {[...Array(7)].map((_, i) => (
                   <div key={i} className="bg-white/5 animate-pulse h-16 rounded-lg" />
                 ))}
               </div>

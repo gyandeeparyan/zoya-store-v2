@@ -4,13 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
-import { Loader2, IndianRupee } from "lucide-react";
+import { Loader2, IndianRupee, ShoppingCart, ArrowLeft } from "lucide-react";
 import { useUser } from '@/context/userContext';
 import { useToast } from "@/hooks/use-toast";
 import { useCart } from '@/context/cartContext';
 import { useCouponPurchase } from '@/context/couponPurchaseContext';
 import { loadRazorpay } from '@/lib/razorpay';
 import { useRouter } from 'next/navigation';
+import { motion } from "framer-motion";
 
 interface FormValues {
   userId: string;
@@ -52,6 +53,48 @@ export function PaymentForm() {
   const { register, handleSubmit, getValues, formState: { errors } } = useForm<FormValues>();
   const { clearCart, getCartTotal } = useCart();
   const { purchaseDetails, clearPurchaseDetails } = useCouponPurchase();
+  const totalAmount = getCartTotal();
+
+  if (totalAmount <= 0) {
+    return (
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="h-[80vh] flex flex-col items-center justify-center gap-6 px-4"
+      >
+        <motion.div
+          animate={{ 
+            y: [0, -10, 0],
+            scale: [1, 1.1, 1] 
+          }}
+          transition={{ 
+            duration: 2,
+            repeat: Infinity,
+            repeatType: "reverse"
+          }}
+        >
+          <ShoppingCart className="w-16 h-16 text-violet-400/50" />
+        </motion.div>
+
+        <div className="text-center space-y-2 max-w-md">
+          <h2 className="text-2xl font-bold text-white">Your Cart is Empty</h2>
+          <p className="text-gray-400 italic">
+            The best way to predict the future is to create it.
+          </p>
+        </div>
+
+        <Button 
+          onClick={() => router.push('/')}
+          className="mt-4 gap-2"
+          variant="outline"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Store
+        </Button>
+      </motion.div>
+    );
+  }
 
   const validateUser = async (data: FormValues) => {
     setIsValidating(true);

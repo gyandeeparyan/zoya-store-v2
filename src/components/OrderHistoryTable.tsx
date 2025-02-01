@@ -57,7 +57,7 @@ export function OrderHistoryTable({ orders }: OrderHistoryTableProps) {
                         ? 'bg-yellow-500/20 text-yellow-400'
                         : 'bg-red-500/20 text-red-400'
                     }`}>
-                      {order.status}
+                      {order.status.toUpperCase()}
                     </span>
                   </TableCell>
                 </TableRow>

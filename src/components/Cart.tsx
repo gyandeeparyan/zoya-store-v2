@@ -21,7 +21,7 @@ export function Cart() {
       <SheetTrigger asChild>
         <button className='relative bg-transparent border-none'>
           <ShoppingCart className="text-white" />
-          <div className='absolute bottom-4 left-5 w-5 h-5 bg-violet-500 text-white font-bold text-xs rounded-full flex items-center justify-center'>
+          <div className='absolute bottom-4 left-5 w-5 h-5 bg-violet-500/20 text-violet-400 font-bold text-xs rounded-full flex items-center justify-center'>
             {items.length}
           </div>
         </button>
@@ -35,7 +35,7 @@ export function Cart() {
                 <SheetClose className="w-full">
                   <Button
                     type="submit" 
-                    className="w-[90%] h-12 text-lg"
+                    className="w-[92%] h-12 mt-4  md:block text-lg"
                   >
                     Order Now
                   </Button>
@@ -107,6 +107,7 @@ export function Cart() {
                     Clear Cart
                   </Button>
                 )}
+                 
                 </div>
               )}
             </>

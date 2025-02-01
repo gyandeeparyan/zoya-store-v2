@@ -15,9 +15,18 @@ interface LensDemoProps {
   originalQuantity: number;
   newQuantity: number;
   price: string;
+  specialTag?: string; // Add this new prop
 }
 
-export function LensDemo({ id, name, imgUrl, originalQuantity, newQuantity, price }: LensDemoProps) {
+export function LensDemo({ 
+  id, 
+  name, 
+  imgUrl, 
+  originalQuantity, 
+  newQuantity, 
+  price,
+  specialTag 
+}: LensDemoProps) {
   const [hovering, setHovering] = useState(false);
   const { addItem } = useCart();
 
@@ -81,14 +90,20 @@ export function LensDemo({ id, name, imgUrl, originalQuantity, newQuantity, pric
                 </span>
                 {price}
               </p>
-              <div className="flex items-center gap-2">
-                <span className="text-gray-500 line-through text-sm">
-                  {originalQuantity}
+              {specialTag ? (
+                <span className="text-violet-100 font-semibold">
+                  {specialTag.toUpperCase()}
                 </span>
-                <span className="text-white font-semibold">
-                  {newQuantity} DIAMONDS
-                </span>
-              </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-500 line-through text-sm">
+                    {originalQuantity}
+                  </span>
+                  <span className="text-white font-semibold">
+                    {newQuantity} DIAMONDS
+                  </span>
+                </div>
+              )}
             </article>
           </motion.div>
           <motion.div
@@ -97,7 +112,7 @@ export function LensDemo({ id, name, imgUrl, originalQuantity, newQuantity, pric
           >
             <Button 
               onClick={handleAddToCart}
-              className="w-full bg-violet-200 text-black rounded-full font-bold flex gap-2 hover:scale-105"
+              className="w-full md:bg-violet-500/20 md:text-violet-400 md:hover:bg-violet-500/20 hover:text-violet-400 rounded-full font-bold flex gap-2 hover:scale-105"
             >
               <span><PlusCircle strokeWidth={3.25}/></span>
               ADD
