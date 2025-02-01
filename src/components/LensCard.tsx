@@ -112,7 +112,7 @@ export function LensDemo({
           >
             <Button 
               onClick={handleAddToCart}
-              className="w-full md:bg-violet-500/20 md:text-violet-400 md:hover:bg-violet-500/20 hover:text-violet-400 rounded-full font-bold flex gap-2 hover:scale-105"
+              className="w-full md:bg-violet-500/20 md:text-violet-400  rounded-full font-bold flex gap-2 hover:scale-105"
             >
               <span><PlusCircle strokeWidth={3.25}/></span>
               ADD
