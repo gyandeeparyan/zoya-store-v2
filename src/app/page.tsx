@@ -5,7 +5,7 @@ import React from "react";
 export default function Home() {
   return (
     <div className="relative z-20">
-      <div className="text-center py-8 md:py-12">
+      <div className="text-center py-8 md:pb-2 md:pt-12">
         <h1 className="text-2xl md:text-4xl font-thin text-white mb-2 tracking-[0.5em] uppercase">
           Mobile Legends Bang Bang
         </h1>
