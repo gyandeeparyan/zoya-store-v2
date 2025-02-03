@@ -222,7 +222,7 @@ export function PaymentForm() {
   return (
     <div className="max-w-[150%] w-full md:w-[90%] mx-auto bg-transparent backdrop-blur-sm rounded-lg border-white/20 p-4">
       <div className="flex flex-col items-center justify-center">
-        <div className="mb-8 ">
+        <div className="mb-8 pt-20">
           <h1 className="text-2xl font-bold text-center text-white mb-2">Enter your details</h1>
           <p className="text-gray-400">Review your details and proceed to payment.</p>
         </div>
@@ -238,12 +238,10 @@ export function PaymentForm() {
         </div>
       </div>
      
-
-      <form onSubmit={handleSubmit(onSubmit)} className="flex w-[100%] items-center justify-center flex-col md:flex-row gap-8">
-        {/* Left Section - Validation */}
-        <div className={`flex flex-col gap-6 w-full ${isValidated ? 'md:w-[40%]' : 'md:w-[40%]'} 
-          ${isValidated && 'md:border-r md:pr-8 md:border-white/20'}`}>
-          <div className={isValidated ? 'md:block hidden w-full' : 'block w-full'}>
+      <form onSubmit={handleSubmit(onSubmit)} className="flex w-[100%] items-center justify-center flex-col gap-8">
+        {/* Validation Section */}
+        {!isValidated && (
+          <div className="flex flex-col gap-6 w-full md:w-[40%]">
             <fieldset className="border border-white/20 rounded-lg p-4 w-full">
               <legend className="px-2 text-sm text-white/60">User ID</legend>
               <Input
@@ -286,9 +284,12 @@ export function PaymentForm() {
               )}
             </Button>
           </div>
+        )}
 
-          {isValidated && username && (
-            <div className="md:mt-auto p-4 bg-white/5 rounded-lg border border-white/10 w-full">
+        {/* User Details Section */}
+        {isValidated && username && (
+          <>
+            <div className="md:mt-auto p-4 bg-white/5 rounded-lg border border-white/10 w-full md:w-[40%]">
               <p className="text-green-400 text-center text-lg font-medium">
                 Welcome, {username}!
               </p>
@@ -303,66 +304,62 @@ export function PaymentForm() {
                 </p>
               </div>
             </div>
-          )}
-        </div>
 
-        {/* Right Section - User Details */}
-        {isValidated && username && (
-          <div className={`flex flex-col gap-6 w-full md:w-[40%] md:pl-8 ${isValidated ? 'block' : 'hidden md:block'}`}>
-            <fieldset className="border border-white/20 rounded-lg p-4">
-              <legend className="px-2 text-sm text-white/60">Full Name</legend>
-              <Input
-                {...register("customerName", { required: "Full name is required" })}
-                placeholder="Enter your full name"
-                className="bg-white/10 border-none text-white h-12 text-lg w-full"
-              />
-              {errors.customerName && (
-                <p className="text-red-400 text-sm mt-1">{errors.customerName.message}</p>
-              )}
-            </fieldset>
+            <div className="flex flex-col gap-6 w-full md:w-[40%]">
+              <fieldset className="border border-white/20 rounded-lg p-4">
+                <legend className="px-2 text-sm text-white/60">Full Name</legend>
+                <Input
+                  {...register("customerName", { required: "Full name is required" })}
+                  placeholder="Enter your full name"
+                  className="bg-white/10 border-none text-white h-12 text-lg w-full"
+                />
+                {errors.customerName && (
+                  <p className="text-red-400 text-sm mt-1">{errors.customerName.message}</p>
+                )}
+              </fieldset>
 
-            <fieldset className="border border-white/20 rounded-lg p-4">
-              <legend className="px-2 text-sm text-white/60">WhatsApp Number</legend>
-              <Input
-                {...register("whatsapp", { required: "WhatsApp number is required" })}
-                placeholder="Enter WhatsApp number"
-                type="tel"
-                className="bg-white/10 border-none text-white h-12 text-lg w-full"
-              />
-              {errors.whatsapp && (
-                <p className="text-red-400 text-sm mt-1">{errors.whatsapp.message}</p>
-              )}
-            </fieldset>
+              <fieldset className="border border-white/20 rounded-lg p-4">
+                <legend className="px-2 text-sm text-white/60">WhatsApp Number</legend>
+                <Input
+                  {...register("whatsapp", { required: "WhatsApp number is required" })}
+                  placeholder="Enter WhatsApp number"
+                  type="tel"
+                  className="bg-white/10 border-none text-white h-12 text-lg w-full"
+                />
+                {errors.whatsapp && (
+                  <p className="text-red-400 text-sm mt-1">{errors.whatsapp.message}</p>
+                )}
+              </fieldset>
 
-            <fieldset className="border border-white/20 rounded-lg p-4">
-              <legend className="px-2 text-sm text-white/60">Email Address</legend>
-              <Input
-                {...register("email", {
-                  required: "Email is required",
-                  pattern: {
-                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                    message: "Invalid email address"
-                  }
-                })}
-                placeholder="Enter email address"
-                type="email"
-                className="bg-white/10 border-none text-white h-12 text-lg w-full"
-              />
-              {errors.email && (
-                <p className="text-red-400 text-sm mt-1">{errors.email.message}</p>
-              )}
-            </fieldset>
+              <fieldset className="border border-white/20 rounded-lg p-4">
+                <legend className="px-2 text-sm text-white/60">Email Address</legend>
+                <Input
+                  {...register("email", {
+                    required: "Email is required",
+                    pattern: {
+                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                      message: "Invalid email address"
+                    }
+                  })}
+                  placeholder="Enter email address"
+                  type="email"
+                  className="bg-white/10 border-none text-white h-12 text-lg w-full"
+                />
+                {errors.email && (
+                  <p className="text-red-400 text-sm mt-1">{errors.email.message}</p>
+                )}
+              </fieldset>
 
-            <Button 
-              type="submit"
-              className="w-full h-12 text-lg mt-auto"
-            >
-              Proceed to Pay
-            </Button>
-          </div>
+              <Button 
+                type="submit"
+                className="w-full h-12 text-lg mt-auto"
+              >
+                Proceed to Pay
+              </Button>
+            </div>
+          </>
         )}
       </form>
-
     </div>
   );
 }

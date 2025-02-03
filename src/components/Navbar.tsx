@@ -19,8 +19,8 @@ import { MyOrdersDrawer } from "./MyOrdersDrawer"
 
 export function NavigationMenuDemo() {
   return (
-    <NavigationMenu className="py-4  flex items-center justify-center md:px-16 w-full">
-      <div className="flex w-full items-center justify-center">
+    <NavigationMenu className="py-4   flex items-center justify-center md:px-16 w-full">
+      <div className="flex  items-center justify-center">
         <NavigationMenuList className="flex items-center space-x-4">
           <NavigationMenuItem>
             <Link href="/" legacyBehavior passHref>
