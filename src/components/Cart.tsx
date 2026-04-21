@@ -24,9 +24,9 @@ export function Cart() {
             <SheetTitle className="text-white">Your Cart</SheetTitle>
             {items.length > 0 && (
               <Link href="/payment" className="w-full">
-                <SheetClose className="w-full">
+                <SheetClose asChild>
                   <Button
-                    type="submit" 
+                    type="submit"
                     className="w-[100%] h-12 mt-4  md:block text-lg"
                   >
                     Order Now
@@ -36,7 +36,7 @@ export function Cart() {
             )}
           </div>
         </SheetHeader>
-        
+
         <div className='flex flex-col gap-4 px-0'>
           {items.length > 0 ? (
             <>
@@ -50,8 +50,8 @@ export function Cart() {
               </div>
 
               {items.map((item) => (
-                <div 
-                  key={item.id} 
+                <div
+                  key={item.id}
                   className="relative rounded-lg p-4 border border-white/20 hover:border-violet-500/20 transition-colors duration-300"
                 >
                   <button
@@ -60,7 +60,7 @@ export function Cart() {
                   >
                     <CircleX className="w-4 h-4 text-white transition-transform group-hover:rotate-90 duration-200" />
                   </button>
-                  
+
                   <div className="flex gap-4">
                     {/* Image */}
                     <div className="relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 border border-white/10">
@@ -95,7 +95,7 @@ export function Cart() {
                   </div>
                 </div>
               ))}
-              
+
               {items.length > 0 && (
                 <Button
                   variant="ghost"
@@ -111,12 +111,12 @@ export function Cart() {
             <div className="flex flex-col items-center justify-center gap-4 min-h-[60vh] text-center px-4">
               <ShoppingCart className="w-16 h-16 text-violet-400/50 animate-bounce" />
               <h3 className="text-xl font-semibold text-white">
-                Your Cart is Empty! 
+                Your Cart is Empty!
               </h3>
               <p className="text-gray-400 max-w-[250px]">
-                Time to shine!  Add some sparkling diamonds to your cart and make your gaming experience extraordinary! 
+                Time to shine!  Add some sparkling diamonds to your cart and make your gaming experience extraordinary!
               </p>
-            
+
             </div>
           )}
         </div>

@@ -26,25 +26,25 @@ export function ContactUsDrawer() {
             <DrawerHeader>
               <DrawerTitle className="text-left hidden">Contact us</DrawerTitle>
             </DrawerHeader>
-            <DrawerClose className="max-h-full max-w-full">
+            <DrawerClose asChild>
               <Button className="text-black bg-white hover:bg-gray-300 rounded-full mr-4 h-10 w-10 p-0">
                 <ChevronDown className="h-10 w-10" />
               </Button>
             </DrawerClose>
           </div>
-          
+
           <div className="p-4 pb-4 m-4">
             <div className="flex flex-row items-center justify-center gap-4">
-              <Link 
-                href="https://www.instagram.com/zoyaofficial898" 
+              <Link
+                href="https://www.instagram.com/zoyaofficial898"
                 target="_blank"
                 className="flex items-center gap-2 hover:text-violet-400 transition-colors"
               >
                 <Instagram className="h-6 w-6" />
                 <span>Instagram</span>
               </Link>
-              <Link 
-                href="https://api.whatsapp.com/send/?phone=918584032812&text&type=phone_number&app_absent=0" 
+              <Link
+                href="https://api.whatsapp.com/send/?phone=918584032812&text&type=phone_number&app_absent=0"
                 target="_blank"
                 className="flex items-center gap-2 hover:text-violet-400 transition-colors"
               >

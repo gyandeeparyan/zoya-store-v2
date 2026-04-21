@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { useCart } from './cartContext';
 import { useUser } from './userContext';
 
@@ -48,7 +48,7 @@ export function CouponPurchaseProvider({ children }: { children: React.ReactNode
     setPurchaseDetails(null);
   };
 
-  const initializePurchase = () => {
+  const initializePurchase = useCallback(() => {
     if (!userDetails || items.length === 0) return;
 
     const couponItems: CouponItem[] = items.map(item => ({
@@ -76,7 +76,7 @@ export function CouponPurchaseProvider({ children }: { children: React.ReactNode
     };
 
     setPurchaseDetails(newPurchaseDetails);
-  };
+  }, [userDetails, items, getCartTotal]);
 
   const updatePaymentStatus = (status: PurchaseDetails['status'], paymentId?: string) => {
     if (!purchaseDetails) return;
@@ -93,13 +93,13 @@ export function CouponPurchaseProvider({ children }: { children: React.ReactNode
     if (userDetails && items.length > 0) {
       initializePurchase();
     }
-  }, [userDetails, items]);
+  }, [userDetails, items, initializePurchase]);
 
   return (
-    <CouponPurchaseContext.Provider 
-      value={{ 
-        purchaseDetails, 
-        setPurchaseDetails, 
+    <CouponPurchaseContext.Provider
+      value={{
+        purchaseDetails,
+        setPurchaseDetails,
         clearPurchaseDetails,
         initializePurchase,
         updatePaymentStatus

@@ -1,77 +1,68 @@
+/**
+ * Payment Form Component - Refactored & Modular
+ * Orchestrates user validation, payment processing, and order management
+ * API URLs are kept on server-side for security
+ */
 'use client';
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useForm } from "react-hook-form";
-import { useState } from "react";
-import { Loader2, IndianRupee, ShoppingCart, ArrowLeft } from "lucide-react";
-import { useUser } from '@/context/userContext';
-import { useToast } from "@/hooks/use-toast";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { ShoppingCart, ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { useCart } from '@/context/cartContext';
 import { useCouponPurchase } from '@/context/couponPurchaseContext';
-import { loadRazorpay } from '@/lib/razorpay';
-import { useRouter } from 'next/navigation';
-import { motion } from "framer-motion";
+import { useUser } from '@/context/userContext';
+import { usePayment } from '@/hooks/usePayment';
+import { motion } from 'framer-motion';
+import type { UserValidationDetails } from '@/actions/validation';
 
-interface FormValues {
-  userId: string;
-  serverId: string;
+// Import modular components
+import { UserValidationForm } from './UserValidationForm';
+import { CustomerInfoForm } from './CustomerInfoForm';
+import { PaymentSummary } from './PaymentSummary';
+
+type PaymentStep = 'validation' | 'customer-info' | 'summary' | 'payment';
+
+interface CustomerData {
   customerName: string;
   whatsapp: string;
   email: string;
 }
 
-interface ValidationResponse {
-  success: boolean;
-  game: string;
-  id: number;
-  server: number;
-  name: string;
-}
-
-interface OrderResponse {
-  orderId: string;
-  amount: number;
-  currency: string;
-  keyId: string;
-  error?: string;
-}
-
-interface VerifyResponse {
-  success: boolean;
-  error?: string;
-}
-
 export function PaymentForm() {
-  const [isValidating, setIsValidating] = useState(false);
-  const [isValidated, setIsValidated] = useState(false);
-  const [username, setUsername] = useState("");
   const router = useRouter();
-
-  const { setUserDetails } = useUser();
-  const { toast } = useToast();
-  const { register, handleSubmit, getValues, formState: { errors } } = useForm<FormValues>();
-  const { clearCart, getCartTotal } = useCart();
+  const { getCartTotal, clearCart } = useCart();
   const { purchaseDetails, clearPurchaseDetails } = useCouponPurchase();
+  const { setUserDetails } = useUser();
+
+  const [step, setStep] = useState<PaymentStep>('validation');
+  const [userValidationDetails, setUserValidationDetails] = useState<UserValidationDetails | null>(null);
+  const [customerData, setCustomerData] = useState<CustomerData | null>(null);
+
+  const { isProcessing, isVerifying, error: paymentError, processPayment } = usePayment(() => {
+    handlePaymentSuccess();
+  });
+
   const totalAmount = getCartTotal();
 
+  // Show empty cart message
   if (totalAmount <= 0) {
     return (
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         className="h-[80vh] flex flex-col items-center justify-center gap-6 px-4"
       >
         <motion.div
-          animate={{ 
+          animate={{
             y: [0, -10, 0],
-            scale: [1, 1.1, 1] 
+            scale: [1, 1.1, 1],
           }}
-          transition={{ 
+          transition={{
             duration: 2,
             repeat: Infinity,
-            repeatType: "reverse"
+            repeatType: 'reverse',
           }}
         >
           <ShoppingCart className="w-16 h-16 text-violet-400/50" />
@@ -84,7 +75,7 @@ export function PaymentForm() {
           </p>
         </div>
 
-        <Button 
+        <Button
           onClick={() => router.push('/')}
           className="mt-4 gap-2"
           variant="outline"
@@ -96,270 +87,201 @@ export function PaymentForm() {
     );
   }
 
-  const validateUser = async (data: FormValues) => {
-    setIsValidating(true);
-    try {
-      const response = await fetch(
-        `https://api.isan.eu.org/nickname/ml?id=${data.userId}&zone=${data.serverId}`
-      );
-      
-      const result: ValidationResponse = await response.json();
-      
-      if (result.success && result.name) {
-        setIsValidated(true);
-        setUsername(result.name);
-        toast({
-          title: "Success",
-          description: "User validated successfully!",
-          variant: "default",
-        });
-      } else {
-        toast({
-          title: "Validation Failed",
-          description: "Invalid User ID or Server ID. Please check and try again.",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to validate user. Please try again.",
-        variant: "destructive",
-      });
-      console.error("Validation error:", error);
-    } finally {
-      setIsValidating(false);
-    }
+  const handleValidationSuccess = (userDetails: UserValidationDetails) => {
+    setUserValidationDetails(userDetails);
+    setStep('customer-info');
   };
 
-  const handlePayment = async () => {
-    try {
-      const response = await fetch('/api/create-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ purchaseDetails })
-      });
-
-      const data: OrderResponse = await response.json();
-      if (data.error) throw new Error(data.error);
-
-      const razorpay = await loadRazorpay();
-      
-      const options: RazorpayOptions = {
-        key: data.keyId,
-        amount: data.amount,
-        currency: data.currency,
-        order_id: data.orderId,
-        name: 'Zoya Store',
-        description: 'Diamond Purchase',
-        handler: async function(response: RazorpayResponse) {
-          try {
-            const verifyResponse = await fetch('/api/verify-payment', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature
-              })
-            });
-
-            const verifyData: VerifyResponse = await verifyResponse.json();
-            
-            if (verifyData.success) {
-              toast({
-                title: "Payment Successful",
-                description: "Your order has been placed successfully!",
-                variant: "default",
-              });
-              handleSuccess();
-            }
-          } catch (error) {
-            toast({
-              title: "Payment Failed",
-              description: "There was an error processing your payment.",
-              variant: "destructive",
-            });
-          }
-        },
-        prefill: purchaseDetails?.customerInfo ? {
-          name: purchaseDetails.customerInfo.customerName,
-          email: purchaseDetails.customerInfo.email,
-          contact: purchaseDetails.customerInfo.whatsapp
-        } : undefined,
-       
-      };
-
-      const paymentObject = new razorpay(options);
-      paymentObject.open();
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to initialize payment.",
-        variant: "destructive",
-      });
-    }
+  const handleCustomerInfoSubmit = (data: CustomerData) => {
+    setCustomerData(data);
+    setStep('summary');
   };
 
-  const handleSuccess = () => {
+  const handlePaymentSuccess = () => {
     clearCart();
     clearPurchaseDetails();
     router.push('/');
   };
 
-  const onSubmit = (data: FormValues) => {
+  const handleProceedToPayment = async () => {
+    if (!purchaseDetails || !customerData || !userValidationDetails) {
+      console.error('[PaymentForm] Missing purchase details or customer data or validation details');
+      return;
+    }
+
+    // Update user details for context
     setUserDetails({
-      userId: data.userId,
-      serverId: data.serverId,
-      username: username,
-      customerName: data.customerName,
-      whatsapp: data.whatsapp,
-      email: data.email
+      userId: purchaseDetails.customerInfo.userId,
+      serverId: purchaseDetails.customerInfo.serverId,
+      username: userValidationDetails.username,
+      customerName: customerData.customerName,
+      whatsapp: customerData.whatsapp,
+      email: customerData.email,
     });
-    handlePayment();
+
+    setStep('payment');
+
+    // Initiate payment processing - await for proper error handling
+    try {
+      await processPayment({
+        totalAmount: purchaseDetails.totalAmount,
+        customerInfo: {
+          ...purchaseDetails.customerInfo,
+          customerName: customerData.customerName,
+          whatsapp: customerData.whatsapp,
+          email: customerData.email,
+        },
+        items: purchaseDetails.items,
+      });
+    } catch (err) {
+      console.error('[PaymentForm] Payment processing error:', err);
+      // Go back to summary on error so user can retry
+      if (paymentError) {
+        setTimeout(() => setStep('summary'), 2000);
+      }
+    }
   };
 
   return (
-    <div className="max-w-[150%] w-full md:w-[90%] mx-auto bg-transparent backdrop-blur-sm rounded-lg border-white/20 p-4">
-      <div className="flex flex-col items-center justify-center">
-        <div className="mb-8 pt-20">
-          <h1 className="text-2xl font-bold text-center text-white mb-2">Enter your details</h1>
-          <p className="text-gray-400">Review your details and proceed to payment.</p>
-        </div>
-
-        <div className="mb-8">
-          <p className="text-lg text-white flex items-center">
-            Total Amount: 
-            <span className="font-bold flex items-center gap-1 ml-2">
-              <IndianRupee className="h-5 w-5"/>
-              {getCartTotal().toFixed(2)}
-            </span>
-          </p>
-        </div>
+    <div className="max-w-2xl mx-auto bg-transparent backdrop-blur-sm rounded-lg p-4 md:p-8">
+      <div className="flex flex-col items-center justify-center mb-12">
+        <h1 className="text-3xl font-bold text-center text-white mb-2">
+          {step === 'validation' && 'Validate Your Account'}
+          {step === 'customer-info' && 'Enter Your Details'}
+          {step === 'summary' && 'Review Your Order'}
+          {step === 'payment' && 'Processing Payment'}
+        </h1>
+        <p className="text-gray-400 text-center">
+          {step === 'validation' && 'Verify your game account'}
+          {step === 'customer-info' && 'Provide your contact information'}
+          {step === 'summary' && 'Review and confirm your order'}
+          {step === 'payment' && 'Completing your purchase...'}
+        </p>
       </div>
-     
-      <form onSubmit={handleSubmit(onSubmit)} className="flex w-[100%] items-center justify-center flex-col gap-8">
-        {/* Validation Section */}
-        {!isValidated && (
-          <div className="flex flex-col gap-6 w-full md:w-[40%]">
-            <fieldset className="border border-white/20 rounded-lg p-4 w-full">
-              <legend className="px-2 text-sm text-white/60">User ID</legend>
-              <Input
-                {...register("userId", { required: "User ID is required" })}
-                placeholder="Enter User ID"
-                className="bg-white/10 border-none text-white h-12 text-lg w-full"
-              />
-              {errors.userId && (
-                <p className="text-red-400 text-sm mt-1">{errors.userId.message}</p>
-              )}
-            </fieldset>
 
-            <fieldset className="border border-white/20 rounded-lg p-4 mt-6 w-full">
-              <legend className="px-2 text-sm text-white/60">Server ID</legend>
-              <Input
-                {...register("serverId", { required: "Server ID is required" })}
-                placeholder="Enter Server ID"
-                className="bg-white/10 border-none text-white h-12 text-lg w-full"
-              />
-              {errors.serverId && (
-                <p className="text-red-400 text-sm mt-1">{errors.serverId.message}</p>
-              )}
-            </fieldset>
-
-            <Button 
-              type="button"
-              onClick={handleSubmit(validateUser)}
-              disabled={isValidating || isValidated}
-              className="w-full h-12 text-lg mt-6"
-            >
-              {isValidating ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Validating
-                </>
-              ) : isValidated ? (
-                "Validated ✓"
-              ) : (
-                "Validate"
-              )}
-            </Button>
-          </div>
+      <div className="space-y-6">
+        {/* Step 1: User Validation */}
+        {step === 'validation' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <UserValidationForm onValidationSuccess={handleValidationSuccess} />
+          </motion.div>
         )}
 
-        {/* User Details Section */}
-        {isValidated && username && (
-          <>
-            <div className="md:mt-auto p-4 bg-white/5 rounded-lg border border-white/10 w-full md:w-[40%]">
-              <p className="text-green-400 text-center text-lg font-medium">
-                Welcome, {username}!
-              </p>
-              <div className="mt-4 text-white/60 text-sm space-y-2">
-                <p className="flex justify-between">
-                  <span>User ID:</span> 
-                  <span className="text-white">{getValues("userId")}</span>
-                </p>
-                <p className="flex justify-between">
-                  <span>Server ID:</span> 
-                  <span className="text-white">{getValues("serverId")}</span>
-                </p>
+        {/* Step 2: Customer Info */}
+        {step === 'customer-info' && userValidationDetails && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="space-y-6"
+          >
+            {/* Game Account Verification Summary */}
+            <div className="bg-gradient-to-br from-emerald-500/5 to-blue-500/5 border border-emerald-500/30 rounded-lg p-4 space-y-3">
+              <p className="text-xs text-emerald-400 font-semibold uppercase tracking-wider">✓ Game Account Verified</p>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <p className="text-gray-400 text-xs">Player Name</p>
+                  <p className="font-bold text-emerald-300">{userValidationDetails.username}</p>
+                </div>
+                {userValidationDetails.game && (
+                  <div>
+                    <p className="text-gray-400 text-xs">Game</p>
+                    <p className="font-semibold text-white truncate">{userValidationDetails.game}</p>
+                  </div>
+                )}
+
               </div>
+              <Button>Procced to Pay</Button>
             </div>
+            <CustomerInfoForm
+              onSubmit={handleCustomerInfoSubmit}
+              disabled={isProcessing || isVerifying}
+            />
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => setStep('validation')}
+              disabled={isProcessing}
+            >
+              Back
+            </Button>
+          </motion.div>
+        )}
 
-            <div className="flex flex-col gap-6 w-full md:w-[40%]">
-              <fieldset className="border border-white/20 rounded-lg p-4">
-                <legend className="px-2 text-sm text-white/60">Full Name</legend>
-                <Input
-                  {...register("customerName", { required: "Full name is required" })}
-                  placeholder="Enter your full name"
-                  className="bg-white/10 border-none text-white h-12 text-lg w-full"
-                />
-                {errors.customerName && (
-                  <p className="text-red-400 text-sm mt-1">{errors.customerName.message}</p>
-                )}
-              </fieldset>
-
-              <fieldset className="border border-white/20 rounded-lg p-4">
-                <legend className="px-2 text-sm text-white/60">WhatsApp Number</legend>
-                <Input
-                  {...register("whatsapp", { required: "WhatsApp number is required" })}
-                  placeholder="Enter WhatsApp number"
-                  type="tel"
-                  className="bg-white/10 border-none text-white h-12 text-lg w-full"
-                />
-                {errors.whatsapp && (
-                  <p className="text-red-400 text-sm mt-1">{errors.whatsapp.message}</p>
-                )}
-              </fieldset>
-
-              <fieldset className="border border-white/20 rounded-lg p-4">
-                <legend className="px-2 text-sm text-white/60">Email Address</legend>
-                <Input
-                  {...register("email", {
-                    required: "Email is required",
-                    pattern: {
-                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                      message: "Invalid email address"
-                    }
-                  })}
-                  placeholder="Enter email address"
-                  type="email"
-                  className="bg-white/10 border-none text-white h-12 text-lg w-full"
-                />
-                {errors.email && (
-                  <p className="text-red-400 text-sm mt-1">{errors.email.message}</p>
-                )}
-              </fieldset>
-
-              <Button 
-                type="submit"
-                className="w-full h-12 text-lg mt-auto"
+        {/* Step 3: Order Summary */}
+        {step === 'summary' && purchaseDetails && customerData && userValidationDetails && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="space-y-6"
+          >
+            <PaymentSummary
+              items={purchaseDetails.items}
+              totalAmount={purchaseDetails.totalAmount}
+              userDetails={userValidationDetails}
+              customerName={customerData.customerName}
+            />
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => setStep('customer-info')}
+                disabled={isProcessing || isVerifying}
               >
-                Proceed to Pay
+                Back
+              </Button>
+              <Button
+                className="flex-1"
+                onClick={handleProceedToPayment}
+                disabled={isProcessing || isVerifying}
+              >
+                {isProcessing || isVerifying ? 'Processing...' : 'Proceed to Payment'}
               </Button>
             </div>
-          </>
+          </motion.div>
         )}
-      </form>
+
+        {/* Step 4: Payment Processing */}
+        {step === 'payment' && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3 }}
+            className="flex flex-col items-center justify-center py-12"
+          >
+            {paymentError ? (
+              <>
+                <div className="text-red-500 mb-4">
+                  <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <p className="text-white text-lg font-medium">Payment Failed</p>
+                <p className="text-red-400 text-sm mt-2">{paymentError}</p>
+                <Button
+                  className="mt-6"
+                  onClick={() => setStep('summary')}
+                >
+                  Back to Review
+                </Button>
+              </>
+            ) : (
+              <>
+                <div className="animate-spin mb-4">
+                  <ShoppingCart className="w-12 h-12 text-violet-400" />
+                </div>
+                <p className="text-white text-lg font-medium">Processing your payment...</p>
+                <p className="text-gray-400 text-sm mt-2">Please complete the payment in the popup window</p>
+              </>
+            )}
+          </motion.div>
+        )}
+      </div>
     </div>
   );
 }

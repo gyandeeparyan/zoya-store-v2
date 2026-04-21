@@ -49,7 +49,7 @@ export function MyOrdersDrawer() {
     try {
       const response = await fetch(`/api/orders/search?whatsapp=${whatsapp}`)
       const data = await response.json()
-      
+
       if (data.error) {
         toast({
           title: "Error",
@@ -92,7 +92,7 @@ export function MyOrdersDrawer() {
               Enter your WhatsApp number to view your orders.
             </DrawerDescription>
           </DrawerHeader>
-          <DrawerClose className="max-h-full max-w-full">
+          <DrawerClose asChild>
             <Button className="text-black bg-white hover:bg-gray-300 rounded-full mr-4 h-10 w-10 p-0">< ChevronDown className="h-10 w-10" /></Button>
           </DrawerClose>
           </div>
@@ -108,7 +108,7 @@ export function MyOrdersDrawer() {
                     onChange={(e) => setWhatsapp(e.target.value)}
                     className="bg-white/10 border-none text-white h-12 text-lg flex-1"
                   />
-                  <Button 
+                  <Button
                     onClick={handleSearch}
                     disabled={isLoading}
                     className="h-12 px-6"
@@ -138,7 +138,7 @@ export function MyOrdersDrawer() {
             )}
           </div>
 
-        
+
         </div>
       </DrawerContent>
     </Drawer>
