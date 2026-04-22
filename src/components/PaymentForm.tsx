@@ -7,7 +7,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ShoppingCart, ArrowLeft } from 'lucide-react';
+import { ShoppingCart, ArrowLeft, LoaderCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/context/cartContext';
 import { useCouponPurchase } from '@/context/couponPurchaseContext';
@@ -353,7 +353,7 @@ export function PaymentForm() {
             ) : (
               <>
                 <div className="animate-spin mb-4">
-                  <ShoppingCart className="w-12 h-12 text-violet-400" />
+                  <LoaderCircle className="w-12 h-12 text-violet-400" />
                 </div>
                 <p className="text-white text-lg font-medium">Processing your payment...</p>
                 <p className="text-gray-400 text-sm mt-2">Please complete the payment in the popup window</p>
