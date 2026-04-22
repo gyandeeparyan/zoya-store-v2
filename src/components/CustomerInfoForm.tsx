@@ -19,17 +19,19 @@ interface CustomerInfoFormProps {
   onSubmit: (data: CustomerFormData) => void;
   isLoading?: boolean;
   disabled?: boolean;
+  formId?: string;
 }
 
 export function CustomerInfoForm({
   onSubmit,
   isLoading = false,
   disabled = false,
+  formId,
 }: CustomerInfoFormProps) {
   const { register, handleSubmit, formState: { errors } } = useForm<CustomerFormData>();
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form id={formId} onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div className="space-y-2">
         <label className="text-sm font-medium text-white">Full Name</label>
         <Input

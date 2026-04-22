@@ -4,6 +4,7 @@
  */
 'use client';
 
+import { useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Accordion } from '@/components/ui/accordion';
@@ -14,7 +15,8 @@ import { useCart } from '@/context/cartContext';
 import type { UserValidationDetails } from '@/actions/validation';
 
 interface UserValidationFormProps {
-  onValidationSuccess: (userDetails: UserValidationDetails) => void;
+  onValidationSuccess: (userDetails: UserValidationDetails, userId: string, serverId: string) => void;
+  onCustomerInfoSubmit: (customerData: { customerName: string; whatsapp: string; email: string }) => void;
   disabled?: boolean;
 }
 
@@ -31,12 +33,17 @@ interface CustomerFormData {
 
 export function UserValidationForm({
   onValidationSuccess,
+  onCustomerInfoSubmit,
   disabled = false,
 }: UserValidationFormProps) {
   const { isValidating, isValidated, userDetails, validateUser } = useValidation();
   const { items: cartItems, getCartTotal } = useCart();
   const { register, handleSubmit, formState: { errors } } = useForm<ValidationFormData>();
   const { register: registerCustomer, handleSubmit: handleCustomerSubmit, formState: { errors: customerErrors }, watch } = useForm<CustomerFormData>();
+
+  // Store submitted ids in refs to avoid stale closure when useEffect fires
+  const submittedUserIdRef = useRef<string>('');
+  const submittedServerIdRef = useRef<string>('');
 
   // Watch customer form fields
   const customerName = watch('customerName');
@@ -52,16 +59,22 @@ export function UserValidationForm({
     !customerErrors.whatsapp &&
     !customerErrors.email;
 
-  const onSubmit = async (data: ValidationFormData) => {
-    const isValid = await validateUser(data.userId, data.serverId);
-    if (isValid && userDetails) {
-      onValidationSuccess(userDetails);
+  // Fix stale closure: call onValidationSuccess via effect once hook state is ready
+  useEffect(() => {
+    if (isValidated && userDetails && submittedUserIdRef.current) {
+      onValidationSuccess(userDetails, submittedUserIdRef.current, submittedServerIdRef.current ?? '');
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isValidated, userDetails]);
+
+  const onSubmit = async (data: ValidationFormData) => {
+    submittedUserIdRef.current = data.userId;
+    submittedServerIdRef.current = data.serverId;
+    await validateUser(data.userId, data.serverId);
   };
 
-  const onCustomerSubmit = async (data: CustomerFormData) => {
-    // Handle customer info submission
-    console.log('Customer info:', data);
+  const onCustomerSubmit = (data: CustomerFormData) => {
+    onCustomerInfoSubmit(data);
   };
 
   if (isValidated && userDetails) {
@@ -253,7 +266,9 @@ export function UserValidationForm({
               : "Please fill in Customer Information to proceed to Pay"}
             <Button
               className="mt-4"
+              type="button"
               disabled={!isCustomerInfoComplete}
+              onClick={handleCustomerSubmit(onCustomerSubmit)}
             >
               Proceed to Payment
             </Button>
@@ -271,6 +286,7 @@ export function UserValidationForm({
           {...register('userId', { required: 'User ID is required' })}
           placeholder="Enter your user ID"
           disabled={isValidating || disabled}
+          defaultValue={"1114917746"}
           className="bg-white/5 border-white/10"
         />
         {errors.userId && <p className="text-xs text-red-400">{errors.userId.message}</p>}
@@ -282,6 +298,7 @@ export function UserValidationForm({
           {...register('serverId', { required: 'Server ID is required' })}
           placeholder="Enter your server ID"
           disabled={isValidating || disabled}
+          defaultValue={"13486"}
           className="bg-white/5 border-white/10"
         />
         {errors.serverId && <p className="text-xs text-red-400">{errors.serverId.message}</p>}

@@ -42,7 +42,7 @@ interface UsePaymentReturn {
   reset: () => void;
 }
 
-export function usePayment(onSuccess: () => void): UsePaymentReturn {
+export function usePayment(onSuccess: () => void, onDismiss?: () => void): UsePaymentReturn {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -121,6 +121,7 @@ export function usePayment(onSuccess: () => void): UsePaymentReturn {
           modal: {
             ondismiss: () => {
               setIsProcessing(false);
+              onDismiss?.();
             },
           },
         };
@@ -147,7 +148,7 @@ export function usePayment(onSuccess: () => void): UsePaymentReturn {
         setIsProcessing(false);
       }
     },
-    [toast, onSuccess]
+    [toast, onSuccess, onDismiss]
   );
 
   const reset = useCallback(() => {

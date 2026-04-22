@@ -11,6 +11,9 @@ declare interface RazorpayOptions {
     email?: string;
     contact?: string;
   };
+  modal?: {
+    ondismiss?: () => void;
+  };
 }
 
 declare interface RazorpayResponse {

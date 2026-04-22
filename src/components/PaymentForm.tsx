@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { useCart } from '@/context/cartContext';
 import { useCouponPurchase } from '@/context/couponPurchaseContext';
 import { useUser } from '@/context/userContext';
+
 import { usePayment } from '@/hooks/usePayment';
 import { motion } from 'framer-motion';
 import type { UserValidationDetails } from '@/actions/validation';
@@ -31,17 +32,21 @@ interface CustomerData {
 
 export function PaymentForm() {
   const router = useRouter();
-  const { getCartTotal, clearCart } = useCart();
-  const { purchaseDetails, clearPurchaseDetails } = useCouponPurchase();
+  const { items: cartItems, getCartTotal, clearCart } = useCart();
+  const { clearPurchaseDetails } = useCouponPurchase();
   const { setUserDetails } = useUser();
 
   const [step, setStep] = useState<PaymentStep>('validation');
   const [userValidationDetails, setUserValidationDetails] = useState<UserValidationDetails | null>(null);
   const [customerData, setCustomerData] = useState<CustomerData | null>(null);
+  const [validatedUserId, setValidatedUserId] = useState<string>('');
+  const [validatedServerId, setValidatedServerId] = useState<string>('');
+  const [paymentDismissed, setPaymentDismissed] = useState(false);
 
-  const { isProcessing, isVerifying, error: paymentError, processPayment } = usePayment(() => {
-    handlePaymentSuccess();
-  });
+  const { isProcessing, isVerifying, error: paymentError, processPayment, reset: resetPayment } = usePayment(
+    () => { handlePaymentSuccess(); },
+    () => { setPaymentDismissed(true); }
+  );
 
   const totalAmount = getCartTotal();
 
@@ -87,9 +92,54 @@ export function PaymentForm() {
     );
   }
 
-  const handleValidationSuccess = (userDetails: UserValidationDetails) => {
+  const handleValidationSuccess = (userDetails: UserValidationDetails, userId: string, serverId: string) => {
     setUserValidationDetails(userDetails);
-    setStep('customer-info');
+    setValidatedUserId(userId);
+    setValidatedServerId(serverId);
+    // Do NOT advance step here — user fills customer info inline in UserValidationForm
+  };
+
+  const handleInlineCustomerInfoSubmit = async (data: CustomerData) => {
+    if (!userValidationDetails || !validatedUserId || !validatedServerId) return;
+
+    const resolvedCustomerData = data;
+    setCustomerData(resolvedCustomerData);
+
+    setUserDetails({
+      userId: validatedUserId,
+      serverId: validatedServerId,
+      username: userValidationDetails.username,
+      customerName: resolvedCustomerData.customerName,
+      whatsapp: resolvedCustomerData.whatsapp,
+      email: resolvedCustomerData.email,
+    });
+
+    setStep('payment');
+
+    const totalAmount = getCartTotal();
+    const payloadItems = cartItems.map(item => ({
+      id: item.id,
+      diamondQuantity: item.newQuantity,
+      pricePerUnit: item.price,
+      quantity: item.quantity,
+    }));
+
+    try {
+      await processPayment({
+        totalAmount,
+        customerInfo: {
+          userId: validatedUserId,
+          serverId: validatedServerId,
+          customerName: resolvedCustomerData.customerName,
+          whatsapp: resolvedCustomerData.whatsapp,
+          email: resolvedCustomerData.email,
+        },
+        items: payloadItems,
+      });
+    } catch (err) {
+      console.error('[PaymentForm] Payment processing error:', err);
+      setTimeout(() => setStep('validation'), 2000);
+    }
   };
 
   const handleCustomerInfoSubmit = (data: CustomerData) => {
@@ -104,15 +154,23 @@ export function PaymentForm() {
   };
 
   const handleProceedToPayment = async () => {
-    if (!purchaseDetails || !customerData || !userValidationDetails) {
-      console.error('[PaymentForm] Missing purchase details or customer data or validation details');
+    if (!customerData || !userValidationDetails || !validatedUserId || !validatedServerId) {
+      console.error('[PaymentForm] Missing customer data or validation details');
       return;
     }
 
-    // Update user details for context
+    const totalAmount = getCartTotal();
+    const payloadItems = cartItems.map(item => ({
+      id: item.id,
+      diamondQuantity: item.newQuantity,
+      pricePerUnit: item.price,
+      quantity: item.quantity,
+    }));
+
+    // Persist full user details to context
     setUserDetails({
-      userId: purchaseDetails.customerInfo.userId,
-      serverId: purchaseDetails.customerInfo.serverId,
+      userId: validatedUserId,
+      serverId: validatedServerId,
       username: userValidationDetails.username,
       customerName: customerData.customerName,
       whatsapp: customerData.whatsapp,
@@ -121,24 +179,21 @@ export function PaymentForm() {
 
     setStep('payment');
 
-    // Initiate payment processing - await for proper error handling
     try {
       await processPayment({
-        totalAmount: purchaseDetails.totalAmount,
+        totalAmount,
         customerInfo: {
-          ...purchaseDetails.customerInfo,
+          userId: validatedUserId,
+          serverId: validatedServerId,
           customerName: customerData.customerName,
           whatsapp: customerData.whatsapp,
           email: customerData.email,
         },
-        items: purchaseDetails.items,
+        items: payloadItems,
       });
     } catch (err) {
       console.error('[PaymentForm] Payment processing error:', err);
-      // Go back to summary on error so user can retry
-      if (paymentError) {
-        setTimeout(() => setStep('summary'), 2000);
-      }
+      setTimeout(() => setStep('summary'), 2000);
     }
   };
 
@@ -167,7 +222,10 @@ export function PaymentForm() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <UserValidationForm onValidationSuccess={handleValidationSuccess} />
+            <UserValidationForm
+              onValidationSuccess={handleValidationSuccess}
+              onCustomerInfoSubmit={handleInlineCustomerInfoSubmit}
+            />
           </motion.div>
         )}
 
@@ -195,9 +253,10 @@ export function PaymentForm() {
                 )}
 
               </div>
-              <Button>Procced to Pay</Button>
+              <Button form="customer-info-form" type="submit">Procced to Pay</Button>
             </div>
             <CustomerInfoForm
+              formId="customer-info-form"
               onSubmit={handleCustomerInfoSubmit}
               disabled={isProcessing || isVerifying}
             />
@@ -213,7 +272,7 @@ export function PaymentForm() {
         )}
 
         {/* Step 3: Order Summary */}
-        {step === 'summary' && purchaseDetails && customerData && userValidationDetails && (
+        {step === 'summary' && customerData && userValidationDetails && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -221,8 +280,13 @@ export function PaymentForm() {
             className="space-y-6"
           >
             <PaymentSummary
-              items={purchaseDetails.items}
-              totalAmount={purchaseDetails.totalAmount}
+              items={cartItems.map(item => ({
+                id: item.id,
+                diamondQuantity: item.newQuantity,
+                pricePerUnit: item.price,
+                quantity: item.quantity,
+              }))}
+              totalAmount={getCartTotal()}
               userDetails={userValidationDetails}
               customerName={customerData.customerName}
             />
@@ -265,9 +329,25 @@ export function PaymentForm() {
                 <p className="text-red-400 text-sm mt-2">{paymentError}</p>
                 <Button
                   className="mt-6"
-                  onClick={() => setStep('summary')}
+                  onClick={() => { resetPayment(); setPaymentDismissed(false); setStep('validation'); }}
                 >
-                  Back to Review
+                  Try Again
+                </Button>
+              </>
+            ) : paymentDismissed ? (
+              <>
+                <div className="text-yellow-500 mb-4">
+                  <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </div>
+                <p className="text-white text-lg font-medium">Payment Cancelled</p>
+                <p className="text-gray-400 text-sm mt-2">You closed the payment window.</p>
+                <Button
+                  className="mt-6"
+                  onClick={() => { setPaymentDismissed(false); setStep('validation'); }}
+                >
+                  Try Again
                 </Button>
               </>
             ) : (
