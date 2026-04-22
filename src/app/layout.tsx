@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { AppChrome } from "@/components/AppChrome";
+import { NavigationMenuDemo } from "@/components/Navbar";
+import { ShootingStarsAndStarsBackgroundDemo } from "@/components/ui/ShootingStarsAndStarsBackgroundDemo";
 import { CartProvider } from '@/context/cartContext';
 import { UserProvider } from '@/context/userContext';
 import { CouponPurchaseProvider } from '@/context/couponPurchaseContext';
@@ -35,7 +36,8 @@ export default function RootLayout({
         <UserProvider>
           <CartProvider>
             <CouponPurchaseProvider>
-              <AppChrome />
+              <NavigationMenuDemo />
+              <ShootingStarsAndStarsBackgroundDemo  />
               <div className="relative z-10">{children}</div>
               <Toaster />
             </CouponPurchaseProvider>
