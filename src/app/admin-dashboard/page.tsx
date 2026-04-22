@@ -34,9 +34,9 @@ interface Order {
 type StatusFilter = 'all' | 'pending' | 'completed' | 'failed';
 
 const statusConfig = {
-  pending:   { label: 'Pending',   bg: 'bg-yellow-500/15', text: 'text-yellow-400',  border: 'border-yellow-500/30',  icon: Clock },
-  completed: { label: 'Completed', bg: 'bg-emerald-500/15', text: 'text-emerald-400', border: 'border-emerald-500/30', icon: CheckCircle2 },
-  failed:    { label: 'Failed',    bg: 'bg-red-500/15',     text: 'text-red-400',     border: 'border-red-500/30',     icon: XCircle },
+  pending:   { label: 'PENDING',   bg: 'bg-zinc-800', text: 'text-yellow-300',  border: 'border-zinc-700', rowBg: 'bg-neutral-900', icon: Clock },
+  completed: { label: 'COMPLETED', bg: 'bg-zinc-800', text: 'text-emerald-300', border: 'border-zinc-700', rowBg: 'bg-neutral-900', icon: CheckCircle2 },
+  failed:    { label: 'FAILED',    bg: 'bg-zinc-800', text: 'text-red-300',     border: 'border-zinc-700', rowBg: 'bg-neutral-900', icon: XCircle },
 };
 
 function OrderRow({ order }: { order: Order }) {
@@ -46,7 +46,7 @@ function OrderRow({ order }: { order: Order }) {
   const totalDiamonds = order.items.reduce((s, i) => s + i.diamondQuantity * i.quantity, 0);
 
   return (
-    <div className={`border rounded-xl overflow-hidden transition-all duration-200 ${cfg.border} bg-white/3 hover:bg-white/5`}>
+    <div className={`border rounded-xl overflow-hidden transition-all duration-200 ${cfg.border} ${cfg.rowBg} hover:border-zinc-500`}>
       {/* Main row */}
       <div
         className="grid grid-cols-[1fr_auto] gap-2 p-4 cursor-pointer select-none"
@@ -55,91 +55,91 @@ function OrderRow({ order }: { order: Order }) {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 items-start">
           {/* Order + date */}
           <div className="col-span-2 md:col-span-1">
-            <p className="text-xs text-gray-500 uppercase tracking-wider mb-0.5">Order ID</p>
+            <p className="text-xs text-zinc-500 uppercase tracking-wider mb-0.5">Order ID</p>
             <p className="font-mono text-sm text-violet-300 truncate">{order.orderId}</p>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-zinc-500 mt-1">
               {new Date(order.purchaseDate).toLocaleString('en-IN', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' })}
             </p>
           </div>
 
           {/* Customer */}
           <div>
-            <p className="text-xs text-gray-500 uppercase tracking-wider mb-0.5">Customer</p>
+            <p className="text-xs text-zinc-500 uppercase tracking-wider mb-0.5">Customer</p>
             <p className="text-sm font-semibold text-white truncate">{order.user.customerName}</p>
-            <p className="text-xs text-gray-400 truncate">{order.user.email}</p>
-            <p className="text-xs text-gray-400">{order.user.whatsapp}</p>
+            <p className="text-xs text-zinc-400 truncate">{order.user.email}</p>
+            <p className="text-xs text-zinc-400">{order.user.whatsapp}</p>
           </div>
 
           {/* Amount + diamonds */}
           <div>
-            <p className="text-xs text-gray-500 uppercase tracking-wider mb-0.5">Amount</p>
+            <p className="text-xs text-zinc-500 uppercase tracking-wider mb-0.5">Amount</p>
             <p className="text-lg font-bold text-emerald-300 flex items-center gap-0.5">
               <IndianRupee className="w-4 h-4" />{order.totalAmount.toFixed(2)}
             </p>
-            <p className="text-xs text-gray-400 flex items-center gap-1 mt-0.5">
+            <p className="text-xs text-zinc-400 flex items-center gap-1 mt-0.5">
               <Gem className="w-3 h-3 text-blue-400" />{totalDiamonds} diamonds
             </p>
           </div>
 
           {/* Status */}
           <div>
-            <p className="text-xs text-gray-500 uppercase tracking-wider mb-0.5">Status</p>
+            <p className="text-xs text-zinc-500 uppercase tracking-wider mb-0.5">Status</p>
             <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${cfg.bg} ${cfg.text} ${cfg.border}`}>
               <StatusIcon className="w-3 h-3" />
               {cfg.label}
             </span>
             {order.razorpayPaymentId && (
-              <p className="text-xs text-gray-500 font-mono mt-1 truncate">{order.razorpayPaymentId}</p>
+              <p className="text-xs text-zinc-500 font-mono mt-1 truncate">{order.razorpayPaymentId}</p>
             )}
           </div>
         </div>
 
         {/* Expand toggle */}
-        <div className="flex items-center text-gray-500">
+        <div className="flex items-center text-zinc-500">
           {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
         </div>
       </div>
 
       {/* Expanded details */}
       {expanded && (
-        <div className="border-t border-white/10 bg-white/2 px-4 py-4 space-y-4">
+        <div className="border-t border-zinc-800 bg-zinc-900 px-4 py-4 space-y-4">
           {/* Game account */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div>
-              <p className="text-xs text-gray-500 uppercase mb-0.5">Player ID</p>
+              <p className="text-xs text-zinc-500 uppercase mb-0.5">Player ID</p>
               <p className="text-sm font-mono text-emerald-300">{order.user.userId}</p>
             </div>
             <div>
-              <p className="text-xs text-gray-500 uppercase mb-0.5">Server ID</p>
+              <p className="text-xs text-zinc-500 uppercase mb-0.5">Server ID</p>
               <p className="text-sm font-mono text-blue-300">{order.user.serverId}</p>
             </div>
             {order.user.username && (
               <div>
-                <p className="text-xs text-gray-500 uppercase mb-0.5">Username</p>
+                <p className="text-xs text-zinc-500 uppercase mb-0.5">Username</p>
                 <p className="text-sm text-white">{order.user.username}</p>
               </div>
             )}
             {order.razorpayOrderId && (
               <div>
-                <p className="text-xs text-gray-500 uppercase mb-0.5">Razorpay Order</p>
-                <p className="text-xs font-mono text-gray-300 break-all">{order.razorpayOrderId}</p>
+                <p className="text-xs text-zinc-500 uppercase mb-0.5">Razorpay Order</p>
+                <p className="text-xs font-mono text-zinc-300 break-all">{order.razorpayOrderId}</p>
               </div>
             )}
           </div>
 
           {/* Items */}
           <div>
-            <p className="text-xs text-gray-500 uppercase mb-2">Items ({order.items.length})</p>
+            <p className="text-xs text-zinc-500 uppercase mb-2">Items ({order.items.length})</p>
             <div className="space-y-1.5">
               {order.items.map((item, idx) => (
-                <div key={idx} className="flex items-center justify-between bg-white/5 rounded-lg px-3 py-2 text-sm">
+                <div key={idx} className="flex items-center justify-between bg-zinc-800 rounded-lg px-3 py-2 text-sm">
                   <div className="flex items-center gap-2">
                     <Gem className="w-4 h-4 text-blue-400" />
                     <span className="text-white font-medium">{item.diamondQuantity} diamonds</span>
-                    <span className="text-gray-400">× {item.quantity}</span>
+                    <span className="text-zinc-400">× {item.quantity}</span>
                   </div>
                   <div className="text-right">
-                    <span className="text-gray-400 text-xs">₹{item.pricePerUnit}/unit · </span>
+                    <span className="text-zinc-400 text-xs">₹{item.pricePerUnit}/unit · </span>
                     <span className="text-emerald-300 font-semibold">₹{(item.totalPrice ?? item.pricePerUnit * item.quantity).toFixed(2)}</span>
                   </div>
                 </div>
@@ -158,6 +158,8 @@ const AdminDashboard = () => {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
   const fetchOrders = async () => {
     setLoading(true);
@@ -195,6 +197,22 @@ const AdminDashboard = () => {
     });
   }, [orders, search, statusFilter]);
 
+  const totalPages = Math.max(1, Math.ceil(filtered.length / itemsPerPage));
+  const paginatedOrders = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filtered.slice(start, start + itemsPerPage);
+  }, [filtered, currentPage]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, statusFilter]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
   // Stats
   const stats = useMemo(() => ({
     total:     orders.length,
@@ -205,32 +223,33 @@ const AdminDashboard = () => {
   }), [orders]);
 
   return (
-    <div className="min-h-screen text-white">
+    <div className="min-h-screen bg-gradient-to-b from-zinc-950 via-neutral-950 to-stone-950 text-white">
       <div className="max-w-7xl mx-auto px-4 py-10 space-y-8">
 
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
-            <p className="text-gray-400 text-sm mt-1">All orders · latest first</p>
+            <p className="text-zinc-400 text-sm mt-1">All orders · latest first</p>
           </div>
-          <Button variant="outline" onClick={fetchOrders} disabled={loading} className="gap-2 border-white/20">
+          <Button variant="outline" onClick={fetchOrders} disabled={loading} className="gap-2 border-zinc-700 bg-zinc-900 text-white hover:bg-zinc-800 hover:text-white">
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           {[
-            { label: 'Total Orders',   value: stats.total,                  icon: ShoppingBag,   color: 'text-violet-400',  bg: 'border-violet-500/30'  },
-            { label: 'Revenue',        value: `₹${stats.revenue.toFixed(0)}`, icon: IndianRupee, color: 'text-emerald-400', bg: 'border-emerald-500/30' },
-            { label: 'Pending',        value: stats.pending,                icon: Clock,          color: 'text-yellow-400',  bg: 'border-yellow-500/30'  },
-            { label: 'Completed',      value: stats.completed,              icon: CheckCircle2,   color: 'text-emerald-400', bg: 'border-emerald-500/30' },
-          ].map(({ label, value, icon: Icon, color, bg }) => (
-            <div key={label} className={`rounded-xl border ${bg} bg-white/3 p-4 space-y-2`}>
+            { label: 'Total Orders',   value: stats.total,                    icon: ShoppingBag,   color: 'text-violet-300',  border: 'border-zinc-700', cardBg: 'bg-neutral-900' },
+            { label: 'Revenue',        value: `₹${stats.revenue.toFixed(0)}`, icon: IndianRupee,  color: 'text-emerald-300', border: 'border-zinc-700', cardBg: 'bg-neutral-900' },
+            { label: 'Pending',        value: stats.pending,                  icon: Clock,         color: 'text-yellow-300',  border: 'border-zinc-700', cardBg: 'bg-neutral-900' },
+            { label: 'Completed',      value: stats.completed,                icon: CheckCircle2,  color: 'text-emerald-300', border: 'border-zinc-700', cardBg: 'bg-neutral-900' },
+            { label: 'Failed',         value: stats.failed,                   icon: XCircle,       color: 'text-red-300',     border: 'border-zinc-700', cardBg: 'bg-neutral-900' },
+          ].map(({ label, value, icon: Icon, color, border, cardBg }) => (
+            <div key={label} className={`rounded-xl border ${border} ${cardBg} p-4 space-y-2`}>
               <div className="flex items-center justify-between">
-                <p className="text-xs text-gray-400 uppercase tracking-wider">{label}</p>
+                <p className="text-xs text-zinc-400 uppercase tracking-wider">{label}</p>
                 <Icon className={`w-4 h-4 ${color}`} />
               </div>
               <p className={`text-2xl font-bold ${color}`}>{value}</p>
@@ -241,12 +260,12 @@ const AdminDashboard = () => {
         {/* Search + filters */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
             <Input
               placeholder="Search by order ID, name, email, WhatsApp, player ID…"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="pl-9 bg-white/5 border-white/15 text-white placeholder:text-gray-500"
+              className="pl-9 bg-zinc-900 border-zinc-700 text-white placeholder:text-zinc-500 focus-visible:ring-zinc-500"
             />
           </div>
           <div className="flex gap-2 flex-wrap">
@@ -254,16 +273,16 @@ const AdminDashboard = () => {
               <button
                 key={s}
                 onClick={() => setStatusFilter(s)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors capitalize ${
+                className={`px-3 py-1.5 rounded-lg text-xs  border transition-colors capitalize ${
                   statusFilter === s
-                    ? s === 'all'       ? 'bg-violet-600/40 border-violet-500/60 text-violet-200'
-                    : s === 'pending'   ? 'bg-yellow-500/25 border-yellow-500/60 text-yellow-200'
-                    : s === 'completed' ? 'bg-emerald-500/25 border-emerald-500/60 text-emerald-200'
-                    :                    'bg-red-500/25 border-red-500/60 text-red-200'
-                    : 'bg-white/5 border-white/15 text-gray-400 hover:border-white/30'
+                    ? s === 'all'       ? 'bg-zinc-800 border-zinc-600 text-violet-200'
+                    : s === 'pending'   ? 'bg-zinc-800 border-zinc-600 text-yellow-200'
+                    : s === 'completed' ? 'bg-zinc-800 border-zinc-600 text-emerald-200'
+                    :                    'bg-zinc-800 border-zinc-600 text-red-200'
+                    : 'bg-zinc-900 border-zinc-700 text-zinc-300 hover:border-zinc-500'
                 }`}
               >
-                {s === 'all' ? `All (${orders.length})` : s === 'pending' ? `Pending (${stats.pending})` : s === 'completed' ? `Completed (${stats.completed})` : `Failed (${stats.failed})`}
+                {s === 'all' ? `ALL (${orders.length})` : s === 'pending' ? `PENDING (${stats.pending})` : s === 'completed' ? `COMPLETED (${stats.completed})` : `FAILED (${stats.failed})`}
               </button>
             ))}
           </div>
@@ -271,21 +290,55 @@ const AdminDashboard = () => {
 
         {/* Orders list */}
         {loading ? (
-          <div className="flex items-center justify-center py-24 text-gray-400">
+          <div className="flex items-center justify-center py-24 text-zinc-400">
             <RefreshCw className="w-6 h-6 animate-spin mr-3" /> Loading orders…
           </div>
         ) : error ? (
-          <div className="text-center py-24 text-red-400">{error}</div>
+          <div className="text-center py-24 text-red-300">{error}</div>
         ) : filtered.length === 0 ? (
-          <div className="text-center py-24 text-gray-500">
+          <div className="text-center py-24 text-zinc-500">
             {search || statusFilter !== 'all' ? 'No orders match your filters.' : 'No orders yet.'}
           </div>
         ) : (
           <div className="space-y-3">
-            <p className="text-xs text-gray-500">{filtered.length} order{filtered.length !== 1 ? 's' : ''} found</p>
-            {filtered.map(order => (
+            <p className="text-xs text-zinc-500">{filtered.length} order{filtered.length !== 1 ? 's' : ''} found</p>
+            {paginatedOrders.map(order => (
               <OrderRow key={order._id} order={order} />
             ))}
+
+            {filtered.length > itemsPerPage && (
+              <div className="pt-3 flex items-center justify-center gap-2 flex-wrap">
+                <button
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1.5 rounded-lg text-xs border bg-zinc-900 border-zinc-700 text-zinc-300 disabled:opacity-40 disabled:cursor-not-allowed hover:border-zinc-500"
+                >
+                  Previous
+                </button>
+
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`px-3 py-1.5 rounded-lg text-xs border ${
+                      currentPage === page
+                        ? 'bg-zinc-800 border-zinc-500 text-white'
+                        : 'bg-zinc-900 border-zinc-700 text-zinc-300 hover:border-zinc-500'
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+
+                <button
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-1.5 rounded-lg text-xs border bg-zinc-900 border-zinc-700 text-zinc-300 disabled:opacity-40 disabled:cursor-not-allowed hover:border-zinc-500"
+                >
+                  Next
+                </button>
+              </div>
+            )}
           </div>
         )}
 
