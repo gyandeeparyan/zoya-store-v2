@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, RefreshCw, IndianRupee, ShoppingBag, Clock, CheckCircle2, XCircle, ChevronDown, ChevronUp, Gem } from 'lucide-react';
@@ -32,6 +32,8 @@ interface Order {
 }
 
 type StatusFilter = 'all' | 'pending' | 'completed' | 'failed';
+
+const AUTO_REFRESH_MS = 30_000;
 
 const statusConfig = {
   pending:   { label: 'Pending',   bg: 'bg-yellow-500/15', text: 'text-yellow-400',  border: 'border-yellow-500/30',  icon: Clock },
@@ -158,23 +160,33 @@ const AdminDashboard = () => {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const [lastUpdatedAt, setLastUpdatedAt] = useState<Date | null>(null);
 
-  const fetchOrders = async () => {
-    setLoading(true);
+  const fetchOrders = useCallback(async (showLoader = true) => {
+    if (showLoader) setLoading(true);
     setError(null);
     try {
       const res = await fetch('/api/admin/orders');
       if (!res.ok) throw new Error('Failed to fetch orders');
       const data = await res.json();
       setOrders(data.orders ?? []);
+      setLastUpdatedAt(new Date());
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
-      setLoading(false);
+      if (showLoader) setLoading(false);
     }
-  };
+  }, []);
 
-  useEffect(() => { fetchOrders(); }, []);
+  useEffect(() => {
+    fetchOrders();
+
+    const intervalId = setInterval(() => {
+      fetchOrders(false);
+    }, AUTO_REFRESH_MS);
+
+    return () => clearInterval(intervalId);
+  }, [fetchOrders]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -213,8 +225,12 @@ const AdminDashboard = () => {
           <div>
             <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
             <p className="text-gray-400 text-sm mt-1">All orders · latest first</p>
+            <p className="text-gray-500 text-xs mt-1">
+              Auto refresh every 30s
+              {lastUpdatedAt ? ` · Last updated ${lastUpdatedAt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}` : ''}
+            </p>
           </div>
-          <Button variant="outline" onClick={fetchOrders} disabled={loading} className="gap-2 border-white/20">
+          <Button variant="outline" onClick={() => fetchOrders()} disabled={loading} className="gap-2 border-white/20">
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>

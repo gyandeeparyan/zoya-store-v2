@@ -84,7 +84,7 @@ export function MyOrdersDrawer() {
         <button className="">Orders</button>
       </DrawerTrigger>
       <DrawerContent className="h-full  ">
-        <div className="mx-auto w-full text-white z-50 max-w-xl">
+        <div className="mx-auto w-full text-white z-50 max-w-7xl">
           <div className="flex justify-between items-center ">
           <DrawerHeader>
             <DrawerTitle className="text-left">Order History</DrawerTitle>
