@@ -4,11 +4,29 @@ import { CouponsPurchase } from '@/models/couponsPurchase.model';
 
 export const dynamic = 'force-dynamic';
 
-function normalizeOrder(order: any) {
+type OrderDocument = Record<string, unknown> & {
+  _id?: unknown;
+  deliveryStatus?: unknown;
+};
+
+function toIdString(value: unknown): string | undefined {
+  if (typeof value === 'string') return value;
+  if (value && typeof value === 'object' && 'toString' in value) {
+    const maybeToString = (value as { toString?: () => string }).toString;
+    if (typeof maybeToString === 'function') return maybeToString.call(value);
+  }
+  return undefined;
+}
+
+function normalizeOrder(order: OrderDocument) {
+  const normalizedId = toIdString(order?._id) ?? order?._id;
+  const normalizedDeliveryStatus =
+    order?.deliveryStatus === 'delivered' ? 'delivered' : 'pending';
+
   return {
     ...order,
-    _id: order?._id?.toString?.() ?? order?._id,
-    deliveryStatus: order?.deliveryStatus ?? 'pending',
+    _id: normalizedId,
+    deliveryStatus: normalizedDeliveryStatus,
   };
 }
 

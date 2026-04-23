@@ -106,7 +106,7 @@ const AdminDashboard = () => {
         alert('Failed to update delivery status');
       }
     },
-    []
+    [fetchOrders]
   );
 
   useEffect(() => {
