@@ -14,6 +14,7 @@ export interface CreateOrderPayload {
     whatsapp: string;
     userId: string;
     serverId: string;
+    username?: string;
   };
   items: Array<{
     id: number;

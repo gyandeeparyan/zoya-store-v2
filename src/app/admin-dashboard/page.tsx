@@ -4,7 +4,7 @@ import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { OrderHistoryTable } from '@/components/OrderHistoryTable';
-import { Search, RefreshCw, Clock } from 'lucide-react';
+import { Search, RefreshCw, Clock, Truck } from 'lucide-react';
 
 interface OrderItem {
   diamondQuantity: number;
@@ -21,6 +21,8 @@ interface Order {
   purchaseDate: string;
   totalAmount: number;
   status: 'pending' | 'completed' | 'failed';
+  deliveryStatus?: 'pending' | 'delivered';
+  deliveryDate?: string | null;
   user: {
     userId: string;
     serverId: string;
@@ -48,7 +50,7 @@ const AdminDashboard = () => {
     if (showLoader) setLoading(true);
     setError(null);
     try {
-      const res = await fetch('/api/admin/orders');
+      const res = await fetch('/api/admin/orders', { cache: 'no-store' });
       if (!res.ok) throw new Error('Failed to fetch orders');
       const data = await res.json();
       setOrders(data.orders ?? []);
@@ -59,6 +61,53 @@ const AdminDashboard = () => {
       if (showLoader) setLoading(false);
     }
   }, []);
+
+  const handleUpdateDeliveryStatus = useCallback(
+    async (
+      identifiers: { mongoId?: string; orderId?: string; razorpayOrderId?: string },
+      deliveryStatus: 'pending' | 'delivered'
+    ) => {
+      try {
+        const primaryIdentifier =
+          identifiers.mongoId ?? identifiers.orderId ?? identifiers.razorpayOrderId;
+
+        if (!primaryIdentifier) {
+          throw new Error('Missing order identifier');
+        }
+
+        const res = await fetch(`/api/admin/orders/${primaryIdentifier}`, {
+          method: 'PATCH',
+          cache: 'no-store',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            deliveryStatus,
+            mongoId: identifiers.mongoId,
+            orderId: identifiers.orderId,
+            razorpayOrderId: identifiers.razorpayOrderId,
+          }),
+        });
+
+        if (!res.ok) throw new Error('Failed to update delivery status');
+        const data = await res.json();
+        const updatedOrder = data?.order;
+
+        if (!updatedOrder) throw new Error('Updated order not returned');
+
+        setOrders((prev) =>
+          prev.map((order) =>
+            order._id === updatedOrder._id || order.orderId === updatedOrder.orderId
+              ? { ...order, ...updatedOrder }
+              : order
+          )
+        );
+        fetchOrders(false);
+      } catch (err) {
+        console.error('Error updating delivery status:', err);
+        alert('Failed to update delivery status');
+      }
+    },
+    []
+  );
 
   useEffect(() => {
     fetchOrders();
@@ -152,10 +201,10 @@ const AdminDashboard = () => {
                   {s === 'all'
                     ? `All (${stats.total})`
                     : s === 'pending'
-                      ? `Pending (${stats.pending})`
+                      ? `Payment Pending (${stats.pending})`
                       : s === 'completed'
-                        ? `Completed (${stats.completed})`
-                        : `Failed (${stats.failed})`}
+                        ? `Payment Completed (${stats.completed})`
+                        : `Payment Failed (${stats.failed})`}
                 </button>
               ))}
             </div>
@@ -177,7 +226,7 @@ const AdminDashboard = () => {
             <p className="text-xs uppercase tracking-[0.14em] text-white/45">
               {filtered.length} order{filtered.length !== 1 ? 's' : ''} found
             </p>
-            <OrderHistoryTable orders={filtered} />
+            <OrderHistoryTable orders={filtered} onUpdateDeliveryStatus={handleUpdateDeliveryStatus} />
           </div>
         )}
       </div>

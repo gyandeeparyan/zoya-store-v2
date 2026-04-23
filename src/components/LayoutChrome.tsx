@@ -11,7 +11,7 @@ interface LayoutChromeProps {
 
 export function LayoutChrome({ children }: LayoutChromeProps) {
   const pathname = usePathname();
-  const hideNavbar = pathname === '/admin-dashboard';
+  const hideNavbar = pathname === '/admin-dashboard' || pathname === '/orders';
 
   return (
     <>

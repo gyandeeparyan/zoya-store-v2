@@ -11,6 +11,12 @@ const couponsPurchaseSchema = new mongoose.Schema({
     enum: ['pending', 'completed', 'failed'],
     default: 'pending'
   },
+  deliveryStatus: {
+    type: String,
+    enum: ['pending', 'delivered'],
+    default: 'pending'
+  },
+  deliveryDate: Date,
   user: {
     userId: String,
     serverId: String,

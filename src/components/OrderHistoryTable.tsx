@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { Accordion } from "@/components/ui/accordion"
-import { CheckCircle2, ChevronLeft, ChevronRight, Clock, Gem, IndianRupee, Package2, ReceiptText, UserRound, XCircle } from 'lucide-react';
+import { CheckCircle2, ChevronLeft, ChevronRight, Clock, Gem, IndianRupee, Package2, ReceiptText, UserRound, XCircle, Truck } from 'lucide-react';
 
 const scrollbarStyles = `
   .custom-scrollbar {
@@ -40,12 +40,15 @@ const scrollbarStyles = `
 
 interface OrderHistoryTableProps {
   orders: Array<{
+    _id?: string;
     orderId: string;
     razorpayOrderId?: string;
     razorpayPaymentId?: string;
     purchaseDate: string;
     totalAmount: number;
     status: string;
+    deliveryStatus?: 'pending' | 'delivered';
+    deliveryDate?: string | null;
     user?: {
       userId?: string;
       serverId?: string;
@@ -61,21 +64,25 @@ interface OrderHistoryTableProps {
       totalPrice: number;
     }>;
   }>;
+  onUpdateDeliveryStatus?: (
+    identifiers: { mongoId?: string; orderId?: string; razorpayOrderId?: string },
+    status: 'pending' | 'delivered'
+  ) => Promise<void>;
 }
 
 const statusConfig = {
   completed: {
-    label: 'Completed',
+    label: 'Payment Completed',
     badge: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
     icon: CheckCircle2,
   },
   pending: {
-    label: 'Pending',
+    label: 'Payment Pending',
     badge: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
     icon: Clock,
   },
   failed: {
-    label: 'Failed',
+    label: 'Payment Failed',
     badge: 'bg-rose-500/15 text-rose-300 border-rose-500/30',
     icon: XCircle,
   },
@@ -93,8 +100,9 @@ function formatDate(value: string) {
   });
 }
 
-export function OrderHistoryTable({ orders }: OrderHistoryTableProps) {
+export function OrderHistoryTable({ orders, onUpdateDeliveryStatus }: OrderHistoryTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
+  const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
 
   const totalPages = Math.max(1, Math.ceil(orders.length / ORDERS_PER_PAGE));
   const totalSpent = orders.reduce((sum, order) => sum + order.totalAmount, 0);
@@ -176,6 +184,11 @@ export function OrderHistoryTable({ orders }: OrderHistoryTableProps) {
                       </div>
                       <p className="font-mono text-sm text-cyan-100 break-all">{order.orderId}</p>
                       <p className="text-xs text-white/55">Placed on {formatDate(order.purchaseDate)}</p>
+                      {order.deliveryStatus === 'delivered' ? (
+                        <p className='text-xs text-white/55'> Delivered Successfully on {formatDate(order.deliveryDate || order.purchaseDate)}</p>
+                      ) : (
+                        <p className='text-xs text-white/55'> Yet to be delivered</p>
+                      )}
                     </div>
 
                     <div className="grid grid-cols-3 gap-3 text-left md:min-w-[320px]">
@@ -209,7 +222,7 @@ export function OrderHistoryTable({ orders }: OrderHistoryTableProps) {
                         <UserRound className="h-3.5 w-3.5 text-cyan-300" />
                         {order.user.customerName}
                       </span>
-                      {order.user.username && <span>@{order.user.username}</span>}
+                      {order.user.username && <span className="text-cyan-100">@{order.user.username}</span>}
                       {order.user.userId && <span>Player ID: {order.user.userId}</span>}
                       {order.user.serverId && <span>Server: {order.user.serverId}</span>}
                     </div>
@@ -266,7 +279,7 @@ export function OrderHistoryTable({ orders }: OrderHistoryTableProps) {
                       </div>
                       <div>
                         <p className="text-[11px] uppercase tracking-[0.14em] text-white/40">Username</p>
-                        <p>{order.user?.username ?? 'N/A'}</p>
+                        <p className="text-white/70">{order.user?.username ? `@${order.user.username}` : '-'}</p>
                       </div>
                       <div>
                         <p className="text-[11px] uppercase tracking-[0.14em] text-white/40">Player ID</p>
@@ -321,13 +334,76 @@ export function OrderHistoryTable({ orders }: OrderHistoryTableProps) {
                           <p className="text-[11px] uppercase tracking-[0.14em] text-white/40">Line Total</p>
                           <p className="flex items-center gap-1 font-semibold text-emerald-300">
                             <IndianRupee className="h-4 w-4" />
-                            {(item.totalPrice ?? 0)?.toFixed(2)}
+                            {((item.totalPrice && item.totalPrice > 0) ? item.totalPrice : (parseFloat(String(item.pricePerUnit)) || 0) * (item.quantity ?? 1))?.toFixed(2)}
                           </p>
                         </div>
                       </div>
                     ))}
                   </div>
                 </div>
+
+                {order.status === 'completed' && (
+                  <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                    <p className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-cyan-200/80">
+                      <Truck className="h-4 w-4" />
+                      Delivery Status
+                    </p>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-[11px] uppercase tracking-[0.14em] text-white/40">Status</p>
+                          <div className="mt-1">
+                            {order.deliveryStatus === 'delivered' ? (
+                              <div className="space-y-2">
+                                <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-emerald-300">
+                                  <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                                  Delivered ✓
+                                </span>
+                                <p className="text-sm text-emerald-200">
+                                  Delivered Successfully on {formatDate(order.deliveryDate || order.purchaseDate)}
+                                </p>
+                              </div>
+                            ) : (
+                              <div className="space-y-2">
+                                <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-amber-300">
+                                  <span className="h-2 w-2 rounded-full bg-amber-400" />
+                                  Pending
+                                </span>
+                                <p className="text-sm text-amber-200">
+                                  Yet to be delivered
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        {order.deliveryStatus !== 'delivered' && onUpdateDeliveryStatus && (order._id || order.orderId) && (
+                          <button
+                            onClick={async () => {
+                              const targetId = order._id ?? order.orderId;
+                              setUpdatingOrderId(targetId);
+                              try {
+                                await onUpdateDeliveryStatus(
+                                  {
+                                    mongoId: order._id,
+                                    orderId: order.orderId,
+                                    razorpayOrderId: order.razorpayOrderId,
+                                  },
+                                  'delivered'
+                                );
+                              } finally {
+                                setUpdatingOrderId(null);
+                              }
+                            }}
+                            disabled={updatingOrderId === (order._id ?? order.orderId)}
+                            className="rounded-lg border border-emerald-500/30 bg-emerald-500/15 px-4 py-2 text-sm font-medium text-emerald-300 transition hover:bg-emerald-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {updatingOrderId === (order._id ?? order.orderId) ? 'Marking...' : 'Mark as Delivered'}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </Accordion>
             );

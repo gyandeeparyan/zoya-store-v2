@@ -130,6 +130,7 @@ export function PaymentForm() {
         customerInfo: {
           userId: validatedUserId,
           serverId: validatedServerId,
+          username: userValidationDetails.username,
           customerName: resolvedCustomerData.customerName,
           whatsapp: resolvedCustomerData.whatsapp,
           email: resolvedCustomerData.email,
@@ -185,6 +186,7 @@ export function PaymentForm() {
         customerInfo: {
           userId: validatedUserId,
           serverId: validatedServerId,
+          username: userValidationDetails.username,
           customerName: customerData.customerName,
           whatsapp: customerData.whatsapp,
           email: customerData.email,

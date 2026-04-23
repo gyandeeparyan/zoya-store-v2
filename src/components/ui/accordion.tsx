@@ -20,15 +20,17 @@ export function Accordion({
 
   return (
     <div className={`border border-white/10 rounded-lg overflow-hidden ${className}`}>
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full p-4 flex items-center justify-between hover:bg-white/5 transition-colors"
-      >
-        <div className="flex-1 text-left">{title}</div>
-        <ChevronDown
-          className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`}
-        />
-      </button>
+      <div className="relative p-4">
+        <div className="flex-1 text-left pr-12">{title}</div>
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="absolute top-4 right-4 h-10 w-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+        >
+          <ChevronDown
+            className={`w-5 h-5 text-white transition-transform ${isOpen ? 'rotate-180' : ''}`}
+          />
+        </button>
+      </div>
       {isOpen && (
         <div className="p-4 border-t border-white/10 bg-white/5">
           {children}
