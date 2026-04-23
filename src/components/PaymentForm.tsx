@@ -359,6 +359,8 @@ export function PaymentForm() {
                 </div>
                 <p className="text-white text-lg font-medium">Processing your payment...</p>
                 <p className="text-gray-400 text-sm mt-2">Please complete the payment in the popup window</p>
+                <p className="text-gray-400 text-sm mt-2">Do not close or refresh this window until the payment is complete.</p>
+                <p className="text-gray-400 text-sm mt-2">You will be redirected automatically once the payment is successful.</p>
               </>
             )}
           </motion.div>

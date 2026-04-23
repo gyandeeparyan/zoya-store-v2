@@ -186,7 +186,7 @@ const AdminDashboard = () => {
                 <button
                   key={s}
                   onClick={() => setStatusFilter(s)}
-                  className={`rounded-full border px-3 text-[11px] py-2 font-extralight uppercase transition-colors ${
+                  className={`rounded-full border px-2.5 text-[12px] py-2 font-extralight transition-colors ${
                     statusFilter === s
                       ? s === 'all'
                         ? 'border-cyan-400/40 bg-cyan-500/15 text-cyan-100'
@@ -226,7 +226,7 @@ const AdminDashboard = () => {
             <p className="text-xs uppercase tracking-[0.14em] text-white/45">
               {filtered.length} order{filtered.length !== 1 ? 's' : ''} found
             </p>
-            <OrderHistoryTable orders={filtered} onUpdateDeliveryStatus={handleUpdateDeliveryStatus} />
+            <OrderHistoryTable orders={filtered} onUpdateDeliveryStatus={handleUpdateDeliveryStatus} isAdmin={true} />
           </div>
         )}
       </div>

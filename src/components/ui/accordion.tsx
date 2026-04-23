@@ -23,8 +23,10 @@ export function Accordion({
       <div className="relative p-4">
         <div className="flex-1 text-left pr-12">{title}</div>
         <button
+          type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className="absolute top-4 right-4 h-10 w-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+          className="absolute right-4 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+          aria-label={isOpen ? 'Collapse section' : 'Expand section'}
         >
           <ChevronDown
             className={`w-5 h-5 text-white transition-transform ${isOpen ? 'rotate-180' : ''}`}

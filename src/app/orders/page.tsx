@@ -135,7 +135,7 @@ export default function OrdersPage() {
             ))}
           </div>
         ) : orders.length > 0 ? (
-          <OrderHistoryTable orders={orders} />
+          <OrderHistoryTable orders={orders} isAdmin={false} />
         ) : hasSearched ? (
           <p className="text-center text-gray-400 py-12">
             No orders found for this WhatsApp number

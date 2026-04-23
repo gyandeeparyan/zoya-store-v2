@@ -68,6 +68,7 @@ interface OrderHistoryTableProps {
     identifiers: { mongoId?: string; orderId?: string; razorpayOrderId?: string },
     status: 'pending' | 'delivered'
   ) => Promise<void>;
+  isAdmin?: boolean;
 }
 
 const statusConfig = {
@@ -100,7 +101,7 @@ function formatDate(value: string) {
   });
 }
 
-export function OrderHistoryTable({ orders, onUpdateDeliveryStatus }: OrderHistoryTableProps) {
+export function OrderHistoryTable({ orders, onUpdateDeliveryStatus, isAdmin = false }: OrderHistoryTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
 
@@ -128,26 +129,26 @@ export function OrderHistoryTable({ orders, onUpdateDeliveryStatus }: OrderHisto
       <style>{scrollbarStyles}</style>
       <div className="space-y-4">
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-          <div className="rounded-2xl border border-cyan-400/20 bg-gradient-to-br from-cyan-500/12 to-sky-500/5 p-5">
+          <div className="rounded-xl border border-cyan-400/20 bg-gradient-to-br from-cyan-500/12 to-sky-500/5 p-5">
             <p className="text-[11px] uppercase tracking-[0.18em] text-cyan-200/70">Orders</p>
             <p className="mt-2 text-2xl font-semibold text-white">{orders.length}</p>
           </div>
-          <div className="rounded-2xl border border-emerald-400/20 bg-gradient-to-br from-emerald-500/12 to-lime-500/5 p-5">
-            <p className="text-[11px] uppercase tracking-[0.18em] text-emerald-200/70">Spent</p>
+          <div className="rounded-xl border border-emerald-400/20 bg-gradient-to-br from-emerald-500/12 to-lime-500/5 p-5">
+            <p className="text-[11px] uppercase tracking-[0.18em] text-emerald-200/70">{isAdmin ? 'Estimated Revenue' : 'Spent'}</p>
             <p className="mt-2 flex items-center gap-1 text-2xl font-semibold text-white">
               <IndianRupee className="h-5 w-5 text-emerald-300" />
               {totalSpent.toFixed(2)}
             </p>
           </div>
-          <div className="rounded-2xl border border-violet-400/20 bg-gradient-to-br from-violet-500/12 to-fuchsia-500/5 p-5">
+          <div className="rounded-xl border border-violet-400/20 bg-gradient-to-br from-violet-500/12 to-fuchsia-500/5 p-5">
             <p className="text-[11px] uppercase tracking-[0.18em] text-violet-200/70">Diamonds</p>
             <p className="mt-2 flex items-center gap-2 text-2xl font-semibold text-white">
               <Gem className="h-5 w-5 text-violet-300" />
               {totalDiamonds}
             </p>
           </div>
-          <div className="rounded-2xl border border-amber-400/20 bg-gradient-to-br from-amber-500/12 to-orange-500/5 p-5">
-            <p className="text-[11px] uppercase tracking-[0.18em] text-amber-200/70">Latest</p>
+          <div className="rounded-xl border border-amber-400/20 bg-gradient-to-br from-amber-500/12 to-orange-500/5 p-5">
+            <p className="text-[11px] uppercase tracking-[0.18em] text-amber-200/70">Updated Till</p>
             <p className="mt-2 text-sm font-medium text-white">
               {orders[0] ? formatDate(orders[0].purchaseDate) : 'No orders'}
             </p>
@@ -172,16 +173,17 @@ export function OrderHistoryTable({ orders, onUpdateDeliveryStatus }: OrderHisto
               title={
                 <div className="space-y-4">
                   <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                    <div className="space-y-1">
+                    <div className="space-y-2">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="rounded-full border border-cyan-400/20 bg-cyan-500/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-cyan-200">
-                          Order #{displayIndex + 1}
+                        <span className="rounded-full border border-cyan-400/20 bg-cyan-500/10 px-2.5 py-1 text-[12px] font-extralight   text-cyan-200">
+                          #{orders.length - displayIndex}
                         </span>
-                        <span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] ${status.badge}`}>
+                        <span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[12px] font-extralight   ${status.badge}`}>
                           <StatusIcon className={`h-3.5 w-3.5 ${order.status === 'pending' ? 'animate-spin-clock' : ''}`} />
                           {status.label}
                         </span>
                       </div>
+                      <div className='border border-white/10 rounded-lg px-3 py-2 mt-1'>
                       <p className="font-mono text-sm text-cyan-100 break-all">{order.orderId}</p>
                       <p className="text-xs text-white/55">Placed on {formatDate(order.purchaseDate)}</p>
                       {order.deliveryStatus === 'delivered' ? (
@@ -189,24 +191,25 @@ export function OrderHistoryTable({ orders, onUpdateDeliveryStatus }: OrderHisto
                       ) : (
                         <p className='text-xs text-white/55'> Yet to be delivered</p>
                       )}
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-3 gap-3 text-left md:min-w-[320px]">
-                      <div className="rounded-xl border border-white/10 bg-black/20 px-3 py-2">
+                      <div className="rounded-lg border border-white/10 bg-black/20 px-3 py-2">
                         <p className="text-[10px] uppercase tracking-[0.14em] text-white/45">Amount</p>
                         <p className="mt-1 flex items-center gap-1 text-sm font-semibold text-emerald-300">
                           <IndianRupee className="h-4 w-4" />
                           {order.totalAmount.toFixed(2)}
                         </p>
                       </div>
-                      <div className="rounded-xl border border-white/10 bg-black/20 px-3 py-2">
+                      <div className="rounded-lg border border-white/10 bg-black/20 px-3 py-2">
                         <p className="text-[10px] uppercase tracking-[0.14em] text-white/45">Diamonds</p>
                         <p className="mt-1 flex items-center gap-1 text-sm font-semibold text-violet-200">
                           <Gem className="h-4 w-4 text-violet-300" />
                           {totalDiamondsForOrder}
                         </p>
                       </div>
-                      <div className="rounded-xl border border-white/10 bg-black/20 px-3 py-2">
+                      <div className="rounded-lg border border-white/10 bg-black/20 px-3 py-2">
                         <p className="text-[10px] uppercase tracking-[0.14em] text-white/45">Items</p>
                         <p className="mt-1 flex items-center gap-1 text-sm font-semibold text-white">
                           <Package2 className="h-4 w-4 text-cyan-300" />
@@ -217,11 +220,7 @@ export function OrderHistoryTable({ orders, onUpdateDeliveryStatus }: OrderHisto
                   </div>
 
                   {order.user?.customerName && (
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-white/65">
-                      <span className="inline-flex items-center gap-1.5">
-                        <UserRound className="h-3.5 w-3.5 text-cyan-300" />
-                        {order.user.customerName}
-                      </span>
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs border border-white/10 rounded-full px-3 py-2 text-white/65">
                       {order.user.username && <span className="text-cyan-100">@{order.user.username}</span>}
                       {order.user.userId && <span>Player ID: {order.user.userId}</span>}
                       {order.user.serverId && <span>Server: {order.user.serverId}</span>}
