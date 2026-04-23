@@ -25,6 +25,17 @@ const scrollbarStyles = `
     background: linear-gradient(180deg, rgba(125, 211, 252, 0.7), rgba(59, 130, 246, 0.6));
     background-clip: content-box;
   }
+  @keyframes spin-clock {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  .animate-spin-clock {
+    animation: spin-clock 3s linear infinite;
+  }
 `;
 
 interface OrderHistoryTableProps {
@@ -159,7 +170,7 @@ export function OrderHistoryTable({ orders }: OrderHistoryTableProps) {
                           Order #{displayIndex + 1}
                         </span>
                         <span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] ${status.badge}`}>
-                          <StatusIcon className="h-3.5 w-3.5" />
+                          <StatusIcon className={`h-3.5 w-3.5 ${order.status === 'pending' ? 'animate-spin-clock' : ''}`} />
                           {status.label}
                         </span>
                       </div>
